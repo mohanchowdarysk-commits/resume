@@ -1,0 +1,2956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HustleRadar — Procurri Hiring Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--surf:#101625;--card:#141b2d;--card2:#1a2338;
+  --line:#20304d;--line2:#2c4166;
+  --text:#e9f0fa;--muted:#7d95b5;--dim:#465d7e;
+  --blue:#60a5fa;--blue-d:#2563eb;
+  --green:#34d399;--yellow:#fbbf24;--red:#f87171;--purple:#a78bfa;
+  --font:'Inter',system-ui,sans-serif;
+  --display:'Space Grotesk','Inter',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(37,99,235,.10),transparent)}
+.wrap{max-width:1320px;margin:0 auto;padding:22px 20px 60px}
+button{font-family:var(--font)}
+.clickable{cursor:pointer}
+
+/* ── header ── */
+.hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:26px;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:44px;height:44px;background:linear-gradient(135deg,var(--blue-d),#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;box-shadow:0 4px 20px rgba(37,99,235,.35)}
+.brand-nm{font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:-.4px}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dg{background:var(--green);box-shadow:0 0 7px var(--green)}
+.dr{background:var(--red);box-shadow:0 0 7px var(--red)}
+.eng-btn{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:7px 13px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;transition:all .14s}
+.eng-btn:hover{color:var(--text);border-color:var(--line2)}
+
+/* ── screens ── */
+.screen{display:none;animation:fadein .25s ease}
+.screen.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 21px;border-radius:10px;font-weight:700;font-size:13px;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-p{background:var(--blue-d);color:#fff;box-shadow:0 2px 12px rgba(37,99,235,.3)}
+.btn-p:hover{background:#1d4ed8;transform:translateY(-1px)}
+.btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-g{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn-g:hover{background:var(--line)}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:8px}
+.btn-w{width:100%}
+
+/* ── layout ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.two{grid-template-columns:1fr}}
+.sec-title{font-family:var(--display);font-size:16px;font-weight:700}
+
+/* ── job tabs ── */
+.jtabs{display:flex;gap:7px;flex-wrap:wrap}
+.jtab{padding:8px 15px;border-radius:8px;border:1px solid var(--line);background:var(--surf);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .14s}
+.jtab:hover{color:var(--text);border-color:var(--line2)}
+.jtab.sel{background:var(--blue-d);border-color:var(--blue-d);color:#fff}
+.jtab.sel-all{background:linear-gradient(135deg,#7c3aed,var(--blue-d));border-color:#7c3aed;color:#fff}
+
+/* ── JD preview ── */
+.jdbox{background:var(--surf);border:1px solid rgba(52,211,153,.4);border-radius:11px;padding:16px;font-size:12px;line-height:1.7;min-height:80px}
+.jd-title{font-family:var(--display);font-size:14px;font-weight:700;color:var(--green);margin-bottom:6px}
+.jd-desc{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6}
+.jd-lbl{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:9px 0 4px}
+.jd-item{font-size:11px;padding:1px 0}
+.jd-row{font-size:11px;display:flex;justify-content:space-between;padding:1px 0}
+.jd-mut{color:var(--muted)}
+.jd-pay{color:var(--muted)}
+.jd-gap{margin-top:9px;font-size:10.5px;color:var(--yellow);line-height:1.5}
+
+/* ── upload ── */
+.dropz{border:2px dashed var(--line);border-radius:12px;padding:34px 16px;text-align:center;cursor:pointer;background:var(--surf);transition:all .15s}
+.dropz:hover{border-color:var(--line2)}
+.dropz.drag{border-color:var(--blue);background:rgba(96,165,250,.06)}
+.flist-empty{text-align:center;color:var(--dim);font-size:12px;padding:14px 0}
+.flist{display:flex;flex-direction:column;gap:6px;max-height:250px;overflow-y:auto}
+.fi{background:var(--surf);border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+.fi.dup{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.04)}
+.fi-main{display:flex;align-items:center;gap:8px}
+.fi-ic{font-size:14px;flex-shrink:0}
+.fi-nm{font-size:12px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi-sz{font-size:10px;color:var(--muted);flex-shrink:0}
+.fbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;flex-shrink:0}
+.fb-ok{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.4)}
+.fb-dup{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.4)}
+.fb-err{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.4)}
+.fi-rm{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;padding:2px 5px;flex-shrink:0;border-radius:4px}
+.fi-rm:hover{color:var(--red)}
+.dup-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;margin-top:8px;padding:7px 10px;background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.2);border-radius:7px}
+.dup-lbl{color:var(--yellow);font-weight:700}
+.dup-nm{font-weight:800}
+.dup-sc{font-weight:700;padding:1px 7px;border-radius:4px;font-size:10.5px}
+.dup-role{color:var(--muted);font-size:10.5px}
+.dup-view{margin-left:auto;background:var(--blue-d);border:none;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;cursor:pointer}
+
+/* ── progress ── */
+.prog{max-width:520px;margin:70px auto;text-align:center}
+.brain{font-size:54px;display:block;margin-bottom:16px;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.prog-title{font-family:var(--display);font-size:22px;font-weight:700;margin-bottom:5px}
+.pbar{height:10px;background:var(--surf);border:1px solid var(--line);border-radius:7px;overflow:hidden;margin:18px 0 9px}
+.pfill{height:100%;background:linear-gradient(90deg,var(--blue-d),#7c3aed);transition:width .35s;border-radius:7px}
+.pstatus{font-size:12px;color:var(--muted);min-height:18px}
+.plive{margin-top:24px;display:flex;flex-direction:column;gap:7px;max-height:240px;overflow-y:auto;text-align:left}
+.live-card{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:12px;display:flex;align-items:center;gap:10px}
+.spinner{width:15px;height:15px;border:2px solid var(--line2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.live-ic{flex-shrink:0;font-size:14px}
+.live-body{flex:1;overflow:hidden}
+.live-nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ── results stats ── */
+.stats{display:flex;gap:11px;margin-bottom:22px;flex-wrap:wrap}
+.stat{flex:1;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;text-align:center;transition:all .14s}
+.stat.clickable:hover{border-color:var(--line2);transform:translateY(-1px)}
+.stat-v{font-family:var(--display);font-size:27px;font-weight:700;line-height:1}
+.stat-l{font-size:10px;font-weight:700;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── notice ── */
+.notice{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--yellow);margin-bottom:18px;line-height:1.55}
+
+/* ── results toolbar ── */
+.res-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.res-title{font-family:var(--display);font-size:19px;font-weight:700}
+.res-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.ftab{padding:6px 14px;border-radius:7px;border:1px solid var(--line);background:var(--surf);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .13s}
+.ftab:hover{color:var(--text)}
+.ftab.on{background:var(--blue-d);border-color:var(--blue-d);color:#fff}
+.srch{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;outline:none;font-family:var(--font);width:200px;transition:border .14s}
+.srch:focus{border-color:var(--blue)}
+.srt{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;outline:none;font-family:var(--font)}
+
+/* ── result cards ── */
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:880px){.rgrid{grid-template-columns:1fr}}
+.rc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:19px;transition:all .15s}
+.rc:hover{border-color:var(--line2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.rc.sh{border-left:3px solid var(--green)}
+.rc.iv{border-left:3px solid var(--blue)}
+.rc.sk{border-left:3px solid var(--red)}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:13px;gap:9px}
+.rc-name{font-family:var(--display);font-size:15px;font-weight:700;line-height:1.2}
+.rc-meta{font-size:10.5px;color:var(--dim);margin-top:3px}
+.rc-best{font-size:10.5px;color:var(--purple);margin-top:3px}
+.rc-best strong{color:#c4b5fd}
+.rc-role{font-size:10.5px;color:var(--dim);margin-top:3px}
+.rc-right{text-align:right;flex-shrink:0}
+.rbadge{display:inline-block;padding:3px 11px;border-radius:6px;font-size:10px;font-weight:900;letter-spacing:.7px;text-transform:uppercase}
+.rb-sh{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.45)}
+.rb-iv{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.45)}
+.rb-sk{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.45)}
+.rc-score{font-family:var(--display);font-size:27px;font-weight:700;line-height:1;margin-top:4px}
+.c-sh{color:var(--green)}.c-iv{color:var(--blue)}.c-sk{color:var(--red)}
+
+.sbars{margin-bottom:11px}
+.sbar{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.sbar-lbl{font-size:10px;font-weight:700;color:var(--muted);width:126px;flex-shrink:0}
+.sbar-tr{flex:1;height:5px;background:var(--surf);border-radius:3px;overflow:hidden;display:block}
+.sbar-tr span{display:block;height:100%;border-radius:3px;transition:width .45s}
+.sbar-v{font-size:10px;font-weight:700;width:34px;text-align:right;flex-shrink:0}
+
+.mini-lbl{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.rmat{margin-bottom:11px}
+.rmat-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;margin-bottom:3px;border:1px solid transparent}
+.rmat-row.best{background:rgba(52,211,153,.06)}
+.rmat-nm{font-size:10px;font-weight:700;flex:1}
+.rmat-bar{width:72px;height:4px;background:var(--surf);border-radius:2px;overflow:hidden;flex-shrink:0;display:block}
+.rmat-bar span{display:block;height:100%;border-radius:2px}
+.rmat-pct{font-size:10px;font-weight:800;width:32px;text-align:right;flex-shrink:0}
+.multi-note{font-size:10px;color:var(--purple);margin-top:5px;padding:4px 8px;background:rgba(167,139,250,.07);border-radius:5px}
+
+.gchip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.g-f{background:rgba(96,165,250,.08);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+.g-p{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.g-n{background:rgba(125,149,181,.08);color:var(--muted);border:1px solid rgba(125,149,181,.25)}
+
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px}
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.t-b{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
+.t-g{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.25)}
+.t-p{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.t-y{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
+.t-gr{background:rgba(125,149,181,.1);color:var(--muted);border:1px solid rgba(125,149,181,.2)}
+
+.view-btn{width:100%;background:none;border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .13s;margin-top:4px}
+.view-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--dim);font-size:14px;grid-column:1/-1}
+
+/* ── modal ── */
+.mlay{position:fixed;inset:0;background:rgba(4,8,15,.8);z-index:300;display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+.mlay.open{display:flex}
+.mbox{background:var(--card);border:1px solid var(--line2);border-radius:20px;width:100%;max-width:780px;max-height:88vh;overflow-y:auto;animation:mup .22s ease}
+@keyframes mup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.mhdr{padding:24px 28px 15px;display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--card);z-index:1;border-bottom:1px solid var(--line)}
+.m-name{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:3px}
+.m-meta{font-size:11px;color:var(--muted)}
+.mcls{background:var(--surf);border:1px solid var(--line);color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mcls:hover{color:var(--text)}
+.mbody{padding:24px 28px}
+.m-hero{display:flex;align-items:center;gap:16px;padding:16px;border-radius:13px;border:1px solid;margin-bottom:20px;flex-wrap:wrap}
+.m-score{font-family:var(--display);font-size:50px;font-weight:700;line-height:1}
+.m-hero-mid{flex:1;min-width:140px}
+.m-rec{font-size:16px;font-weight:900;letter-spacing:.5px}
+.m-best{font-size:11px;color:var(--muted);margin-top:3px}
+.m-best strong{color:#c4b5fd}
+.m-agecalc{font-size:10px;color:var(--dim);margin-top:4px}
+.m-hero-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.m-gap{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:800;border:1px solid;text-transform:uppercase;letter-spacing:.4px}
+.m-pdf{background:var(--surf);border:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:700;padding:6px 13px;border-radius:8px;cursor:pointer}
+.m-pdf.has{background:var(--blue-d);border-color:var(--blue-d);color:#fff}
+.m-sec{margin-bottom:20px}
+.m-lbl{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.m-bar{display:flex;align-items:center;gap:10px;padding:5px 0}
+.m-bar-lbl{font-size:12px;font-weight:700;width:180px;flex-shrink:0;color:var(--muted)}
+.m-bar-tr{flex:1;height:7px;background:var(--surf);border-radius:4px;overflow:hidden;display:block}
+.m-bar-tr span{display:block;height:100%;border-radius:4px}
+.m-bar-v{font-size:12px;font-weight:900;width:44px;text-align:right;flex-shrink:0}
+.m-bar-rec{font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;flex-shrink:0}
+.m-quote{background:var(--surf);border-radius:11px;padding:14px;margin-bottom:14px;border-left:3px solid}
+.m-quote.blue{border-color:var(--blue)}
+.m-quote.purple{border-color:var(--purple)}
+.m-quote.yellow{border-color:var(--yellow)}
+.m-qlbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.m-qtxt{font-size:12.5px;color:var(--muted);line-height:1.65;font-style:italic}
+.m-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:600px){.m-cols{grid-template-columns:1fr}}
+.m-col{background:var(--surf);border-radius:11px;padding:13px}
+.m-item{font-size:12px;padding:3px 0;line-height:1.5;display:flex;gap:7px}
+.m-item.mut{color:var(--muted)}
+.m-q{font-size:12px;padding:9px 12px;background:var(--surf);border-radius:8px;border-left:3px solid var(--blue);margin-bottom:6px;line-height:1.55}
+.m-qn{color:var(--blue);font-weight:800;font-size:10px;margin-right:7px}
+
+/* ── home panel ── */
+.hstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:640px){.hstats{grid-template-columns:repeat(2,1fr)}}
+.hstat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;text-align:center;transition:all .14s}
+.hstat.clickable:hover{border-color:var(--line2);transform:translateY(-1px)}
+.hstat.green{border-color:rgba(52,211,153,.4)}
+.hstat.blue{border-color:rgba(96,165,250,.4)}
+.hstat.red{border-color:rgba(248,113,113,.4)}
+.hstat-v{font-family:var(--display);font-size:25px;font-weight:700;line-height:1}
+.hstat-l{font-size:10px;font-weight:700;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
+.rpanel{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:17px;margin-bottom:18px}
+.rpanel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.recent-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid var(--line);border-radius:6px;transition:background .12s}
+.recent-row:last-child{border-bottom:none}
+.recent-row:hover{background:var(--surf)}
+.recent-ic{font-size:16px;flex-shrink:0}
+.recent-mid{flex:1;min-width:0}
+.recent-nm{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.recent-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;flex-shrink:0;text-transform:uppercase}
+.recent-sc{font-family:var(--display);font-size:15px;font-weight:700;width:42px;text-align:right;flex-shrink:0}
+
+/* ── engine panel ── */
+.epanel{position:fixed;inset:0;background:rgba(4,8,15,.8);z-index:400;display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+.epanel.open{display:flex}
+.ebox{background:var(--card);border:1px solid var(--line2);border-radius:18px;width:100%;max-width:490px;padding:26px;animation:mup .22s ease}
+.e-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.e-title{font-family:var(--display);font-size:16px;font-weight:700}
+.e-x{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer}
+.e-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:17px}
+.eopt{border:2px solid var(--line);border-radius:11px;padding:15px;cursor:pointer;text-align:center;transition:all .14s;background:var(--surf)}
+.eopt:hover{border-color:var(--line2)}
+.eopt.esel{border-color:#7c3aed;background:rgba(124,58,237,.08)}
+.eopt-ic{font-size:25px;margin-bottom:5px}
+.eopt-nm{font-weight:800;font-size:13px}
+.eopt-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.e-lbl{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}
+.e-status{font-size:13px;color:var(--muted);margin-bottom:11px;padding:9px 11px;background:var(--surf);border-radius:8px;border:1px solid var(--line)}
+.e-sel{width:100%;background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;font-family:var(--font);margin-bottom:11px}
+.e-input{width:100%;background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;font-family:var(--font);margin-bottom:7px}
+.e-help{background:var(--surf);border-radius:9px;padding:11px;font-size:11px;color:var(--dim);line-height:1.85;margin-top:10px}
+.e-help b{color:var(--muted)}
+.e-help code{color:var(--green)}
+
+/* ── notes ── */
+.note-item{background:var(--surf);border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:7px}
+.note-head{display:flex;justify-content:space-between;margin-bottom:3px}
+.note-by{font-size:10px;font-weight:800;color:var(--blue)}
+.note-ts{font-size:10px;color:var(--dim)}
+.note-txt{font-size:12px;line-height:1.55}
+.note-add{display:flex;gap:8px;margin-top:9px;align-items:center}
+
+/* ── evidence check ── */
+.ev-row{display:flex;gap:9px;padding:8px 11px;background:var(--surf);border-radius:9px;margin-bottom:6px;align-items:flex-start}
+.ev-mark{font-size:14px;font-weight:900;flex-shrink:0;line-height:1.4}
+.ev-body{flex:1;min-width:0}
+.ev-req{font-size:12px;font-weight:700;margin-bottom:2px}
+.ev-quote{font-size:11.5px;color:var(--muted);font-style:italic;line-height:1.5}
+
+/* ── toggle switch ── */
+.switch{position:relative;display:inline-block;width:46px;height:25px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--line);border-radius:25px;transition:.2s}
+.slider:before{position:absolute;content:"";height:19px;width:19px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s}
+.switch input:checked + .slider{background:rgba(52,211,153,.3)}
+.switch input:checked + .slider:before{transform:translateX(21px);background:var(--green)}
+.dy{background:var(--yellow);box-shadow:0 0 7px var(--yellow)}
+
+/* ── card quick actions ── */
+.rc-actions{display:flex;gap:6px;align-items:stretch;margin-top:4px}
+.qa-btn{border:1px solid var(--line);background:var(--surf);border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;padding:8px 11px;transition:all .13s;white-space:nowrap}
+.qa-star{color:var(--purple);border-color:rgba(167,139,250,.4)}
+.qa-star:hover{background:rgba(167,139,250,.12);border-color:var(--purple)}
+.qa-rej{color:var(--red);border-color:rgba(248,113,113,.4)}
+.qa-rej:hover{background:rgba(248,113,113,.12);border-color:var(--red)}
+.qa-restore{color:var(--green);border-color:rgba(52,211,153,.4)}
+.qa-restore:hover{background:rgba(52,211,153,.12);border-color:var(--green)}
+.rc.rejected{opacity:.6}
+.ftab-stage{border-style:dashed}
+
+/* ── stages ── */
+.stage-row{display:flex;gap:6px;flex-wrap:wrap}
+.stage-btn{padding:5px 11px;border-radius:7px;border:1px solid var(--line);background:var(--surf);color:var(--muted);font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.4px;transition:all .13s}
+.stage-btn:hover{border-color:var(--line2);color:var(--text)}
+.contact-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:var(--surf);border:1px solid var(--line);color:var(--blue);font-size:12px;font-weight:700;text-decoration:none}
+.contact-chip:hover{border-color:var(--blue)}
+
+/* ── outreach ── */
+.or-row{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--line)}
+.or-row:last-child{border-bottom:none}
+.or-chk{width:15px;height:15px;flex-shrink:0;accent-color:var(--blue-d);cursor:pointer}
+.or-mid{flex:1;min-width:0}
+.or-nm{font-size:13px;font-weight:700}
+.or-ph{font-size:10.5px;color:var(--muted);margin-top:1px}
+.or-tpl{width:100%;background:var(--surf);border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--text);font-size:12.5px;outline:none;font-family:var(--font);resize:vertical;min-height:64px;line-height:1.5}
+.or-tpl:focus{border-color:var(--blue)}
+
+/* ── toast ── */
+.toast-wrap{position:fixed;top:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:600;pointer-events:none}
+.toast{background:var(--card2);border:1px solid var(--line2);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;pointer-events:auto;animation:tin .2s ease;max-width:290px}
+.toast.ok{border-color:rgba(52,211,153,.5);color:var(--green)}
+.toast.err{border-color:rgba(248,113,113,.5);color:var(--red)}
+.toast.warn{border-color:rgba(251,191,36,.5);color:var(--yellow)}
+@keyframes tin{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <div>
+        <div class="brand-nm">HustleRadar</div>
+        <div class="brand-sub">Procurri Hiring Intelligence · Carrollton, TX</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="pill" id="syncPill" style="display:none"><span class="dot" id="syncDot"></span><span id="syncLbl">Sync</span></div>
+      <div class="pill"><span class="dot dg" id="statusDot"></span><span id="statusLbl">Groq · llama-4-scout</span></div>
+      <button class="eng-btn" id="btnSync">☁ Team Sync</button>
+      <button class="eng-btn" id="btnEngine">⚙ Engine</button>
+    </div>
+  </header>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- SCREEN: SETUP -->
+  <section class="screen on" id="screenSetup">
+
+    <div id="homePanel" style="display:none">
+      <div class="hstats" id="homeStats"></div>
+      <div class="rpanel">
+        <div class="rpanel-head">
+          <span style="font-size:13px;font-weight:800">🕐 Top screened candidates</span>
+          <button class="btn btn-g btn-sm" id="btnViewAll">View all results →</button>
+        </div>
+        <div id="recentList"></div>
+      </div>
+    </div>
+
+    <div class="two">
+      <!-- job selection -->
+      <div class="card" style="display:flex;flex-direction:column;gap:15px">
+        <div class="sec-title">📋 Select job role</div>
+        <div class="jtabs" id="jobTabs">
+          <button class="jtab" data-act="seljob" data-job="0">ITAD Technician</button>
+          <button class="jtab" data-act="seljob" data-job="1">Lifecycle Operative</button>
+          <button class="jtab" data-act="seljob" data-job="2">Warehouse Associate</button>
+          <button class="jtab" data-act="seljob" data-job="3">Warehouse Team Lead</button>
+          <button class="jtab" data-act="seljob" data-job="4">Hardware Technician</button>
+          <button class="jtab sel-all" data-act="seljob" data-job="-1">⚡ Scan All Roles</button>
+        </div>
+        <div class="jdbox" id="jdBox"></div>
+      </div>
+
+      <!-- upload -->
+      <div class="card" style="display:flex;flex-direction:column;gap:13px">
+        <div class="sec-title">📄 Upload resumes</div>
+        <div class="dropz" id="dropZone">
+          <div style="font-size:34px;opacity:.5;margin-bottom:7px">📁</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">Drag &amp; drop PDFs here</div>
+          <div style="font-size:11px;color:var(--muted)">or click to browse — multiple files supported</div>
+        </div>
+        <input type="file" id="fileInput" multiple accept="application/pdf" style="display:none">
+        <div class="flist" id="fileList"><div class="flist-empty">No resumes loaded yet</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:var(--muted)" id="fileCount">0 resumes</span>
+          <button class="btn btn-g btn-sm" id="btnClearFiles">Clear all</button>
+        </div>
+        <button class="btn btn-p btn-w" id="btnScreen" disabled>▶ Screen candidates</button>
+        <div style="font-size:11px;color:var(--dim);text-align:center">Duplicates are detected automatically with their previous scores</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN: PROGRESS -->
+  <section class="screen" id="screenProgress">
+    <div class="prog">
+      <span class="brain">🧠</span>
+      <div class="prog-title">Screening candidates…</div>
+      <div style="font-size:13px;color:var(--muted)" id="progSub"></div>
+      <div class="pbar"><div class="pfill" id="progFill" style="width:0%"></div></div>
+      <div class="pstatus" id="progStatus">Preparing…</div>
+      <div class="plive" id="progLive"></div>
+    </div>
+  </section>
+
+  <!-- SCREEN: RESULTS -->
+  <section class="screen" id="screenResults">
+    <div class="stats" id="statsRow"></div>
+    <div class="notice" id="gapNotice"></div>
+    <div class="res-head">
+      <div>
+        <div class="res-title" id="resTitle">Candidate rankings</div>
+        <div class="res-sub" id="resSub"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-g btn-sm" id="btnRescanAll" title="Re-screen the candidates currently shown">↻ Rescan view</button>
+        <button class="btn btn-p btn-sm" id="btnOutreach">📱 Outreach</button>
+        <button class="btn btn-g btn-sm" id="btnScreenMore">+ Screen more</button>
+        <button class="btn btn-g btn-sm" id="btnClearHistory">🗑 Clear history</button>
+        <button class="btn btn-p btn-sm" id="btnExport">⬇ Export CSV</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div id="filterTabs" style="display:flex;gap:7px;flex-wrap:wrap"></div>
+      <input class="srch" id="searchBox" type="text" placeholder="🔎 Search name, skill, tag…">
+      <select class="srt" id="sortSel">
+        <option value="score">Score: high → low</option>
+        <option value="name">Name: A → Z</option>
+        <option value="rec">Recommendation</option>
+        <option value="recent">Most recent</option>
+      </select>
+    </div>
+    <div class="rgrid" id="resultsGrid"></div>
+  </section>
+</div>
+
+<!-- CANDIDATE MODAL -->
+<div class="mlay" id="candidateModal">
+  <div class="mbox">
+    <div class="mhdr">
+      <div style="flex:1;min-width:0">
+        <div class="m-name" id="modalName"></div>
+        <div class="m-meta" id="modalMeta"></div>
+      </div>
+      <button class="mcls" id="modalClose">✕</button>
+    </div>
+    <div class="mbody" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- OUTREACH PANEL -->
+<div class="epanel" id="outreachPanel">
+  <div class="ebox" style="max-width:640px">
+    <div class="e-head">
+      <div class="e-title">📱 Outreach — contact your Strong Hires</div>
+      <button class="e-x" id="btnOutreachClose">✕</button>
+    </div>
+
+    <div class="e-lbl">Message template — {name} {fullname} {role} are filled per candidate</div>
+    <textarea class="or-tpl" id="orTemplate">Hi {name}, this is Procurri in Carrollton TX — we reviewed your application for the {role} position and we're impressed. Are you available for a quick chat this week? Reply YES and we'll set it up.</textarea>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px">
+      <span style="font-size:12px;color:var(--muted)" id="orCount">0 candidates</span>
+      <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="orIncludeInterview" style="accent-color:var(--blue-d)"> Include Interview tier
+      </label>
+    </div>
+    <div id="orList" style="max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:4px 10px;background:var(--card)"></div>
+
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" data-act="or-copyall">📋 Copy all messages</button>
+      <button class="btn btn-g btn-sm" data-act="or-csv">⬇ Export outreach CSV</button>
+      <button class="btn btn-p btn-sm" data-act="or-contacted" style="margin-left:auto">✓ Mark selected CONTACTED</button>
+    </div>
+
+    <div style="border-top:1px solid var(--line);margin-top:16px;padding-top:14px">
+      <div class="e-lbl">🤖 AI phone calls via Vapi (optional — ~1,000 free min/mo)</div>
+      <div style="font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:9px">
+        Create a free account at <b style="color:var(--blue)">vapi.ai</b> → build an assistant with your screening questions → buy/import a phone number → paste the three values below. Candidate name, role, and this app's suggested interview questions are passed to each call automatically.
+      </div>
+      <input class="e-input" id="vapiKey" type="password" placeholder="Vapi API key">
+      <input class="e-input" id="vapiAssistant" type="text" placeholder="Assistant ID">
+      <input class="e-input" id="vapiPhoneId" type="text" placeholder="Phone Number ID">
+      <button class="btn btn-g btn-w" data-act="or-vapi">📞 Queue AI calls to selected candidates</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEAM SYNC PANEL -->
+<div class="epanel" id="syncPanel">
+  <div class="ebox" style="max-width:560px">
+    <div class="e-head">
+      <div class="e-title">☁ Team sync — shared candidate database</div>
+      <button class="e-x" id="btnSyncClose">✕</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--surf);border:1px solid var(--line);border-radius:10px;margin-bottom:16px">
+      <div>
+        <div style="font-size:13px;font-weight:800">Team sync</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Turn off to work offline — zero Supabase calls</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="syncToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px">
+      Connect a free <b style="color:var(--text)">Supabase</b> project so your whole team shares one candidate database:
+      everyone sees the same results, and duplicate detection works across teammates.
+    </div>
+
+    <div class="e-lbl">Step 1 — One-time setup (any teammate does this once)</div>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:9px">
+      Create a free project at <b style="color:var(--blue)">supabase.com</b> → open <b>SQL Editor</b> → paste &amp; run:
+    </div>
+    <div style="position:relative;margin-bottom:14px">
+      <pre id="sqlBlock" style="background:var(--surf);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:10.5px;color:var(--green);line-height:1.6;overflow-x:auto;white-space:pre;font-family:monospace">create table if not exists candidates (
+  hash text primary key,
+  name text,
+  file_name text,
+  score_data jsonb,
+  screened_by text,
+  created_at timestamptz default now()
+);
+alter table candidates enable row level security;
+create policy "team_all" on candidates
+  for all using (true) with check (true);
+alter table candidates
+  add column if not exists notes jsonb default '[]';
+alter table candidates
+  add column if not exists stage text default 'NEW';</pre>
+      <button class="btn btn-g btn-sm" id="btnCopySql" style="position:absolute;top:8px;right:8px">Copy</button>
+    </div>
+
+    <div class="e-lbl">Step 2 — Connect (every teammate pastes the same two values)</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:7px">Find both under Project Settings → API</div>
+    <input class="e-input" id="sbUrlInput" type="text" placeholder="Project URL — https://xxxx.supabase.co">
+    <input class="e-input" id="sbKeyInput" type="password" placeholder="anon public key — eyJhbGciOi…">
+    <input class="e-input" id="sbNameInput" type="text" placeholder="Your name (shown as “screened by”)">
+
+    <div style="display:flex;gap:9px;margin-top:6px">
+      <button class="btn btn-g" id="btnSyncTest" style="flex:1">Test connection</button>
+      <button class="btn btn-p" id="btnSyncSave" style="flex:1">Save &amp; sync</button>
+    </div>
+    <div id="sbTestStatus" style="font-size:12px;margin-top:10px;min-height:18px"></div>
+
+    <div class="e-help" style="margin-top:12px">
+      <b>Notes:</b> the anon key is safe-ish for a small internal team but anyone holding it can read/write the table.
+      For wider use, tighten the RLS policy or add Supabase Auth later.
+    </div>
+  </div>
+</div>
+
+<!-- ENGINE PANEL -->
+<div class="epanel" id="enginePanel">
+  <div class="ebox">
+    <div class="e-head">
+      <div class="e-title">⚙ AI engine</div>
+      <button class="e-x" id="btnEngineClose">✕</button>
+    </div>
+    <div class="e-grid">
+      <div class="eopt" id="engOptOllama">
+        <div class="eopt-ic">🖥️</div>
+        <div class="eopt-nm">Ollama Local</div>
+        <div class="eopt-sub">Free · Private · No limits</div>
+      </div>
+      <div class="eopt esel" id="engOptGroq">
+        <div class="eopt-ic">⚡</div>
+        <div class="eopt-nm">Groq Cloud</div>
+        <div class="eopt-sub">Fast · Free tier · Default</div>
+      </div>
+    </div>
+
+    <div id="ollamaPane" style="display:none">
+      <div class="e-lbl">Ollama status</div>
+      <div class="e-status" id="ollamaStatus">Checking…</div>
+      <div class="e-lbl">Model</div>
+      <select class="e-sel" id="ollamaModel">
+        <option value="qwen3:4b">qwen3:4b — FASTEST, 4 GB RAM (recommended)</option>
+        <option value="gemma4:e4b">gemma4:e4b — fast + great JSON, 6 GB RAM</option>
+        <option value="qwen3:8b">qwen3:8b — better quality, slower, 8 GB RAM</option>
+        <option value="llama3.2">llama3.2 — small but weaker JSON, 4 GB RAM</option>
+        <option value="qwen3:14b">qwen3:14b — high quality, slow, 10 GB RAM</option>
+        <option value="llama3.3:70b">llama3.3:70b — best quality, very slow, 43 GB RAM</option>
+      </select>
+      <button class="btn btn-g btn-w" id="btnTestOllama">🔄 Test connection</button>
+      <div class="e-help">
+        <b>Setup:</b> download from <b style="color:var(--blue)">ollama.com</b><br>
+        Run: <code>ollama serve</code><br>
+        Pull model: <code>ollama pull qwen3:4b</code><br>
+        <b>Speed note:</b> reasoning models (qwen3:8b+) are slow because they "think" before answering.
+        This app disables thinking mode automatically, but <b>qwen3:4b</b> is still 3–5× faster.
+        Without a GPU, expect 20–60 s per resume — use Groq for bulk runs.
+      </div>
+    </div>
+
+    <div id="groqPane">
+      <div class="e-lbl">Groq API key</div>
+      <input class="e-input" id="groqKey" type="password" placeholder="gsk_… — free key at console.groq.com">
+      <button class="btn btn-g btn-w" id="btnTestGroq">🔑 Test key &amp; load models</button>
+      <div id="groqTestStatus" style="font-size:12px;margin:10px 0;min-height:18px;color:var(--muted)">Paste your key and press Test.</div>
+      <div class="e-lbl">Model</div>
+      <select class="e-sel" id="groqModel">
+        <option value="">— press Test to load available models —</option>
+      </select>
+      <div class="e-help">
+        <b>Why this matters:</b> Groq retires models periodically. This app reads the live model list from your account and
+        auto-switches if a model disappears, so it keeps working without an update.<br>
+        Free tier: 30K tokens/min, 14,400 requests/day.
+      </div>
+    </div>
+
+    <button class="btn btn-p btn-w" id="btnEngineSave" style="margin-top:17px">Save &amp; close</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  HustleRadar — Procurri Hiring Intelligence
+//  Architecture: event delegation, no inline handlers on
+//  dynamic content, defensive DOM access throughout.
+// ══════════════════════════════════════════════════════════
+'use strict';
+
+// ─── CONFIG ───────────────────────────────────────────────
+var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+var GROQ_KEY_DEFAULT = '';
+var GROQ_MODELS_URL = 'https://api.groq.com/openai/v1/models';
+// Preference order — first available on the account wins. Survives deprecations.
+var GROQ_PREFERRED = [
+  'llama-3.1-8b-instant',        // highest free-tier TPM — best for bulk
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'llama-3.3-70b-versatile',
+  'qwen/qwen3.6-27b',
+  'openai/gpt-oss-20b',
+  'openai/gpt-oss-120b'          // lowest TPM + reasoning overhead — last resort
+];
+var groqModel = '';           // resolved at runtime
+var groqTested = false;
+var groqJsonMode = true;   // disabled automatically if the model rejects strict JSON mode
+var OLLAMA_URL = 'http://localhost:11434';
+var MAX_CHARS = 2000;
+var STORE_KEY = 'hustleradar_pro_v1';
+
+// ─── STATE ────────────────────────────────────────────────
+var engine = 'groq';          // 'groq' | 'ollama'
+var ollamaConnected = false;
+var jobIdx = -1;              // -1 = Scan All
+var uploads = [];             // this-session uploads
+var results = [];             // persisted screening results
+var hist = {};             // hash -> scoreData
+var activeFilter = 'ALL';
+var searchTerm = '';
+var pdfStore = {};            // hash -> File (memory only)
+var notes = {};               // hash -> [{by,text,ts}]
+var stages = {};              // hash -> stage
+var STAGES = ['NEW', 'CONTACTED', 'INTERVIEWING', 'OFFER', 'HIRED', 'REJECTED'];
+var STAGE_COLORS = { NEW: 'var(--muted)', CONTACTED: 'var(--blue)', INTERVIEWING: 'var(--purple)', OFFER: 'var(--yellow)', HIRED: 'var(--green)', REJECTED: 'var(--red)' };
+var stageFilter = 'ALL';
+
+// ─── SUPABASE TEAM SYNC ──────────────────────────────────
+var sbUrl = '';               // e.g. https://xxxx.supabase.co
+var sbKey = '';               // anon public key
+var myName = '';              // shown as "screened by"
+var syncState = 'off';        // off | ok | err
+var SB_CFG_KEY = 'hustleradar_sync_cfg';
+var syncEnabled = true;       // master switch to stop all Supabase calls
+
+function sbConfigured() { return !!(syncEnabled && sbUrl && sbKey); }
+function sbHeaders() {
+  return {
+    'apikey': sbKey,
+    'Authorization': 'Bearer ' + sbKey,
+    'Content-Type': 'application/json',
+    'Prefer': 'resolution=merge-duplicates,return=minimal'
+  };
+}
+function loadSyncCfg() {
+  try {
+    var raw = localStorage.getItem(SB_CFG_KEY);
+    if (!raw) return;
+    var c = JSON.parse(raw);
+    sbUrl = c.url || ''; sbKey = c.key || ''; myName = c.me || '';
+    syncEnabled = c.on !== false;   // default on when previously configured
+  } catch (e) { }
+}
+function saveSyncCfg() {
+  try { localStorage.setItem(SB_CFG_KEY, JSON.stringify({ url: sbUrl, key: sbKey, me: myName, on: syncEnabled })); } catch (e) { }
+}
+
+async function sbTest() {
+  if (!sbConfigured()) { syncState = 'off'; updateSyncStatus(); return false; }
+  try {
+    var res = await fetch(sbUrl + '/rest/v1/candidates?select=hash&limit=1', { headers: sbHeaders() });
+    syncState = res.ok ? 'ok' : 'err';
+    updateSyncStatus();
+    return res.ok;
+  } catch (e) { syncState = 'err'; updateSyncStatus(); return false; }
+}
+
+async function sbFetchAll() {
+  if (!sbConfigured()) return;
+  try {
+    var res = await fetch(sbUrl + '/rest/v1/candidates?select=*&order=created_at.desc&limit=2000', { headers: sbHeaders() });
+    if (!res.ok) { syncState = 'err'; updateSyncStatus(); return; }
+    var rows = await res.json();
+    var added = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (!row.hash || !row.score_data) continue;
+      if (!hist[row.hash]) added++;
+      hist[row.hash] = row.score_data;
+      if (row.stage && (!stages[row.hash] || stages[row.hash] === 'NEW')) stages[row.hash] = row.stage;
+      if (row.notes && row.notes.length) {
+        var loc = notes[row.hash] || [];
+        var seen = {};
+        loc.forEach(function (n) { seen[n.ts + '|' + n.text] = true; });
+        row.notes.forEach(function (n) { if (!seen[n.ts + '|' + n.text]) loc.push(n); });
+        loc.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+        notes[row.hash] = loc;
+      }
+      var exists = results.some(function (r) { return r.hash === row.hash; });
+      if (!exists) {
+        results.push({
+          name: row.file_name || row.name || 'resume.pdf',
+          hash: row.hash,
+          sizeKB: 0,
+          scoreData: row.score_data,
+          ts: row.created_at ? Date.parse(row.created_at) : Date.now(),
+          by: row.screened_by || ''
+        });
+      }
+    }
+    syncState = 'ok'; updateSyncStatus();
+    saveData();
+    if (added > 0) toast('Synced ' + added + ' candidate' + (added !== 1 ? 's' : '') + ' from team', 'ok');
+  } catch (e) { syncState = 'err'; updateSyncStatus(); }
+}
+
+async function sbUpsert(batch) {
+  if (!sbConfigured() || !batch.length) return;
+  try {
+    var rows = batch.map(function (b) {
+      return {
+        hash: b.hash,
+        name: b.scoreData.candidateName || b.name,
+        file_name: b.name,
+        score_data: b.scoreData,
+        screened_by: myName || 'Unknown',
+        stage: stages[b.hash] || 'NEW'
+      };
+    });
+    var res = await fetch(sbUrl + '/rest/v1/candidates?on_conflict=hash', {
+      method: 'POST', headers: sbHeaders(), body: JSON.stringify(rows)
+    });
+    if (res.ok) { syncState = 'ok'; toast('Synced to team database', 'ok'); }
+    else { syncState = 'err'; toast('Team sync failed (' + res.status + ') — saved locally', 'warn'); }
+  } catch (e) { syncState = 'err'; toast('Team sync failed — saved locally', 'warn'); }
+  updateSyncStatus();
+}
+
+async function sbClearAll() {
+  if (!sbConfigured()) return;
+  try {
+    await fetch(sbUrl + '/rest/v1/candidates?hash=neq.__none__', { method: 'DELETE', headers: sbHeaders() });
+  } catch (e) { }
+}
+
+async function sbPushNotes(hash) {
+  if (!sbConfigured()) return;
+  try {
+    await fetch(sbUrl + '/rest/v1/candidates?hash=eq.' + encodeURIComponent(hash), {
+      method: 'PATCH', headers: sbHeaders(),
+      body: JSON.stringify({ notes: notes[hash] || [] })
+    });
+  } catch (e) { }
+}
+
+async function sbPushStage(hash) {
+  if (!sbConfigured()) return;
+  try {
+    await fetch(sbUrl + '/rest/v1/candidates?hash=eq.' + encodeURIComponent(hash), {
+      method: 'PATCH', headers: sbHeaders(),
+      body: JSON.stringify({ stage: stages[hash] || 'NEW' })
+    });
+  } catch (e) { }
+}
+
+function setStage(hash, stage) {
+  stages[hash] = stage;
+  saveData();
+  sbPushStage(hash);
+  renderResults();
+  renderHome();
+}
+
+function addNote(hash) {
+  var inp = $('noteInput');
+  if (!inp) return;
+  var text = inp.value.trim();
+  if (!text) return;
+  if (!notes[hash]) notes[hash] = [];
+  notes[hash].push({ by: myName || 'Me', text: text, ts: Date.now() });
+  inp.value = '';
+  saveData();
+  sbPushNotes(hash);
+  renderNotes(hash);
+  renderResults();
+}
+
+function renderNotes(hash) {
+  var box = $('notesList');
+  if (!box) return;
+  var list = notes[hash] || [];
+  if (!list.length) { box.innerHTML = '<div style="font-size:11.5px;color:var(--dim);padding:4px 0">No notes yet \u2014 add the first one below.</div>'; return; }
+  var html = '';
+  for (var i = list.length - 1; i >= 0; i--) {
+    var n = list[i];
+    var when = new Date(n.ts || Date.now());
+    var whenStr = (when.getMonth() + 1) + '/' + when.getDate() + ' ' + when.getHours() + ':' + String(when.getMinutes()).padStart(2, '0');
+    html += '<div class="note-item"><div class="note-head"><span class="note-by">' + esc(n.by || 'Unknown') + '</span><span class="note-ts">' + whenStr + '</span></div><div class="note-txt">' + esc(n.text) + '</div></div>';
+  }
+  box.innerHTML = html;
+}
+
+function updateSyncStatus() {
+  var el = $('syncPill');
+  if (!el) return;
+  var tg = $('syncToggle');
+  if (tg) tg.checked = syncEnabled;
+  if (!sbUrl || !sbKey) { el.style.display = 'none'; return; }
+  if (!syncEnabled) {
+    el.style.display = 'inline-flex';
+    var d0 = $('syncDot'); var l0 = $('syncLbl');
+    if (d0) { d0.className = 'dot'; d0.style.background = 'var(--dim)'; d0.style.boxShadow = 'none'; }
+    if (l0) l0.textContent = 'Sync paused';
+    return;
+  }
+  el.style.display = 'inline-flex';
+  var dot = $('syncDot'); var lbl = $('syncLbl');
+  if (syncState === 'ok') { dot.className = 'dot dg'; lbl.textContent = 'Team sync on'; }
+  else if (syncState === 'err') { dot.className = 'dot dr'; lbl.textContent = 'Sync error'; }
+  else { dot.className = 'dot'; dot.style.background = 'var(--yellow)'; lbl.textContent = 'Sync…'; }
+}
+
+// ─── JOB DEFINITIONS ─────────────────────────────────────
+var JOBS = [
+  {
+    id: 'itad', title: 'ITAD Technician', pay: '$18\u201322/hr',
+    must: ['IT hardware ID, testing & troubleshooting', 'Lift 50 lbs, stand extended periods', 'Non-climate warehouse comfort'],
+    nice: ['Warehouse operations', 'SOP compliance'],
+    sc: { hustle: { w: 30, l: 'Hustle & Work Ethic' }, physical: { w: 35, l: 'Physical / Warehouse' }, itad: { w: 35, l: 'ITAD / Lifecycle' } },
+    gap: 'Gaps forgiven ONLY with 2+ yrs direct ITAD or warehouse experience. Otherwise penalized.',
+    hire: 'Direct ITAD / data destruction + warehouse background',
+    skip: 'Pure office/desk resume, zero physical history'
+  },
+  {
+    id: 'lifecycle', title: 'LifeCycle Services Operative', pay: '$18\u201322/hr',
+    must: ['Shipping & receiving experience', 'Lift 50 lbs, stand extended periods', 'Serial number / asset verification accuracy'],
+    nice: ['IT hardware familiarity', 'Pallet tagging systems'],
+    sc: { hustle: { w: 35, l: 'Hustle & Work Ethic' }, physical: { w: 40, l: 'Physical / Warehouse' }, itad: { w: 25, l: 'ITAD / Lifecycle Bonus' } },
+    gap: 'Gaps penalized unless strong warehouse / shipping OR ITAD experience redeems them. Fresh grads with hustle welcome.',
+    hire: 'Warehouse shipping & receiving 2+ yrs + hustle signals',
+    skip: 'No physical work, unexplained gaps without warehouse/ITAD'
+  },
+  {
+    id: 'warehouse', title: 'Warehouse Associate', pay: '$18\u201322/hr',
+    must: ['Warehouse, shipping/receiving or logistics experience', 'Lift heavy loads, stand extended periods'],
+    nice: ['2+ yrs warehouse', 'IT hardware experience', 'WMS / MS Office'],
+    sc: { hustle: { w: 35, l: 'Hustle & Work Ethic' }, physical: { w: 50, l: 'Physical / Warehouse' }, itad: { w: 15, l: 'IT Hardware Bonus' } },
+    gap: 'Gaps negative. Forgiven only with 2+ yrs solid warehouse / logistics history.',
+    hire: 'Strong warehouse/logistics + forklift or pick-pack experience',
+    skip: 'No physical work, desk-only background'
+  },
+  {
+    id: 'teamlead', title: 'Warehouse Team Lead', pay: '$22\u201325/hr',
+    must: ['2+ yrs warehouse / shipping / logistics', 'Leadership or supervisory experience', 'Stand extended periods'],
+    nice: ['WMS experience', 'IT hardware experience'],
+    sc: { hustle: { w: 25, l: 'Hustle & Work Ethic' }, physical: { w: 35, l: 'Physical / Warehouse' }, itad: { w: 15, l: 'IT Hardware Bonus' }, leadership: { w: 25, l: 'Leadership / Supervisory' } },
+    gap: 'Leadership history required. Gaps heavily penalized unless strong warehouse leadership track record exists.',
+    hire: 'Warehouse supervisor/lead 2+ yrs with measurable team results',
+    skip: 'No leadership experience, no physical/warehouse background'
+  },
+  {
+    id: 'hardware', title: 'Hardware Technician', pay: '$20\u201325/hr',
+    must: ['2+ yrs IT hardware engineering or tech support', 'Enterprise IT equipment familiarity', 'Lift heavy equipment, stand extended periods'],
+    nice: ['Diagnostic tools & testing equipment', 'Strong problem-solving'],
+    sc: { hustle: { w: 20, l: 'Hustle & Work Ethic' }, physical: { w: 20, l: 'Physical Comfort' }, itad: { w: 60, l: 'IT Hardware / Technical' } },
+    gap: 'Technical skills primary. Gaps less critical when enterprise IT hardware skills are verified by job history.',
+    hire: 'Server / storage / networking hands-on 2+ yrs enterprise',
+    skip: 'No hands-on IT hardware, purely software/theoretical'
+  }
+];
+
+// ─── HELPERS ─────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function toast(msg, kind) {
+  var el = document.createElement('div');
+  el.className = 'toast ' + (kind || 'ok');
+  el.textContent = msg;
+  $('toastWrap').appendChild(el);
+  setTimeout(function () { el.remove(); }, 4200);
+}
+function recColor(rec) {
+  if (rec === 'STRONG_HIRE') return 'var(--green)';
+  if (rec === 'INTERVIEW') return 'var(--blue)';
+  return 'var(--red)';
+}
+function recBg(rec) {
+  if (rec === 'STRONG_HIRE') return 'rgba(52,211,153,.12)';
+  if (rec === 'INTERVIEW') return 'rgba(96,165,250,.12)';
+  return 'rgba(248,113,113,.12)';
+}
+function recIcon(rec) {
+  if (rec === 'STRONG_HIRE') return '\u2705';
+  if (rec === 'INTERVIEW') return '\uD83D\uDD35';
+  return '\u274C';
+}
+
+// ─── PERSISTENCE ─────────────────────────────────────────
+function saveData() {
+  try {
+    var safe = results.map(function (r) {
+      return { name: r.name, hash: r.hash, sizeKB: r.sizeKB, scoreData: r.scoreData, ts: r.ts, text: r.text, by: r.by };
+    });
+    localStorage.setItem(STORE_KEY, JSON.stringify({ history: hist, results: safe, notes: notes, stages: stages }));
+  } catch (e) { /* storage full or blocked - non fatal */ }
+}
+function loadData() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    hist = d.history || {};
+    results = d.results || [];
+    notes = d.notes || {};
+    stages = d.stages || {};
+  } catch (e) { hist = {}; results = []; }
+}
+
+// ─── HASHING (dup detection) ─────────────────────────────
+function makeHash(text) {
+  var buf = new TextEncoder().encode(text.slice(0, 2000));
+  return crypto.subtle.digest('SHA-256', buf).then(function (h) {
+    return Array.prototype.map.call(new Uint8Array(h), function (b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('').slice(0, 16);
+  });
+}
+
+// ─── SCREEN NAVIGATION ───────────────────────────────────
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('on');
+  $(id).classList.add('on');
+  window.scrollTo(0, 0);
+}
+function goHome() { renderHome(); showScreen('screenSetup'); }
+function goResults() {
+  var j = null;
+  if (results.length && results[0].scoreData) {
+    j = JOBS.find(function (x) { return x.id === results[0].scoreData.jobId; });
+  }
+  showResultsFor(j || { title: 'All Roles', pay: 'Multiple', gap: 'Varies by role' });
+}
+
+// ─── JOB SELECTION ───────────────────────────────────────
+function selectJob(idx) {
+  jobIdx = idx;
+  var tabs = document.querySelectorAll('#jobTabs .jtab');
+  for (var i = 0; i < tabs.length; i++) {
+    var tIdx = parseInt(tabs[i].getAttribute('data-job'), 10);
+    tabs[i].classList.remove('sel', 'sel-all');
+    if (tIdx === idx) tabs[i].classList.add(idx === -1 ? 'sel-all' : 'sel');
+  }
+  renderJD();
+}
+
+function renderJD() {
+  var el = $('jdBox');
+  var html = '';
+  if (jobIdx === -1) {
+    html += '<div class="jd-title">\u26A1 Scan All 5 Procurri Roles</div>';
+    html += '<div class="jd-desc">Every resume is scored against all five open roles. The AI identifies each candidate\u2019s best-fit position and flags multi-role matches.</div>';
+    html += '<div class="jd-lbl">Roles scanned</div>';
+    for (var i = 0; i < JOBS.length; i++) {
+      html += '<div class="jd-row"><span>\u2713 ' + esc(JOBS[i].title) + '</span><span class="jd-pay">' + esc(JOBS[i].pay) + '</span></div>';
+    }
+  } else {
+    var j = JOBS[jobIdx];
+    html += '<div class="jd-title">\uD83C\uDFAF ' + esc(j.title) + ' \u00B7 ' + esc(j.pay) + '</div>';
+    html += '<div class="jd-lbl">Must have</div>';
+    for (var m = 0; m < j.must.length; m++) html += '<div class="jd-item">\u2713 ' + esc(j.must[m]) + '</div>';
+    html += '<div class="jd-lbl">Scoring weights</div>';
+    var keys = Object.keys(j.sc);
+    for (var k = 0; k < keys.length; k++) {
+      var s = j.sc[keys[k]];
+      html += '<div class="jd-row"><span class="jd-mut">' + esc(s.l) + '</span><span>' + s.w + '%</span></div>';
+    }
+    html += '<div class="jd-gap">\u26A0 ' + esc(j.gap) + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// ─── FILE HANDLING ───────────────────────────────────────
+function handleFileSelection(fileList) {
+  var arr = [];
+  for (var i = 0; i < fileList.length; i++) {
+    if (fileList[i].type === 'application/pdf') arr.push(fileList[i]);
+  }
+  if (!arr.length) { toast('PDF files only', 'err'); return; }
+  arr.forEach(function (f) { processOneFile(f); });
+}
+
+async function processOneFile(file) {
+  var text = '';
+  var err = null;
+  try {
+    var buf = await file.arrayBuffer();
+    var pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+    for (var p = 1; p <= pdf.numPages; p++) {
+      var page = await pdf.getPage(p);
+      var content = await page.getTextContent();
+      text += content.items.map(function (it) { return it.str; }).join(' ') + '\n';
+    }
+    text = text.trim().substring(0, MAX_CHARS);
+    if (!text) err = 'Empty PDF';
+  } catch (e) { err = 'Parse Failed'; }
+
+  var h = await makeHash(text || (file.name + file.size));
+  var isDup = !!hist[h] || uploads.some(function (u) { return u.hash === h; });
+  if (!err) pdfStore[h] = file;
+  uploads.push({ name: file.name, hash: h, text: text, err: err, sizeKB: Math.round(file.size / 1024), isDup: isDup });
+  renderUploadList();
+  updateScreenButton();
+}
+
+function renderUploadList() {
+  var el = $('fileList');
+  var cnt = $('fileCount');
+  if (!uploads.length) {
+    el.innerHTML = '<div class="flist-empty">No resumes loaded yet</div>';
+    cnt.textContent = '0 resumes';
+    return;
+  }
+  var dups = uploads.filter(function (u) { return u.isDup; }).length;
+  cnt.textContent = uploads.length + ' resume' + (uploads.length !== 1 ? 's' : '') + ' \u00B7 ' + dups + ' duplicate' + (dups !== 1 ? 's' : '');
+
+  var html = '';
+  for (var i = 0; i < uploads.length; i++) {
+    var u = uploads[i];
+    var prev = u.isDup ? hist[u.hash] : null;
+    var icon = u.err ? '\u26A0\uFE0F' : u.isDup ? '\uD83D\uDD01' : '\uD83D\uDCC4';
+    var badge;
+    if (u.err) badge = '<span class="fbadge fb-err">' + esc(u.err) + '</span>';
+    else if (u.isDup) badge = '<span class="fbadge fb-dup">Already screened</span>';
+    else badge = '<span class="fbadge fb-ok">Ready</span>';
+
+    html += '<div class="fi' + (u.isDup ? ' dup' : '') + '">';
+    html += '<div class="fi-main">';
+    html += '<span class="fi-ic">' + icon + '</span>';
+    html += '<span class="fi-nm">' + esc(u.name.replace('.pdf', '')) + '</span>';
+    html += '<span class="fi-sz">' + u.sizeKB + ' KB</span>';
+    html += badge;
+    html += '<button class="fi-rm" data-act="rmfile" data-i="' + i + '">\u2715</button>';
+    html += '</div>';
+
+    if (prev) {
+      var rc = recColor(prev.recommendation);
+      html += '<div class="dup-info">';
+      html += '<span class="dup-lbl">Previously screened:</span>';
+      html += '<span class="dup-nm">' + esc(prev.candidateName || u.name.replace('.pdf', '')) + '</span>';
+      html += '<span class="dup-sc" style="color:' + rc + ';background:' + recBg(prev.recommendation) + '">' + esc((prev.recommendation || '').replace(/_/g, ' ')) + ' \u00B7 ' + (prev.overallScore || 0) + '%</span>';
+      html += '<span class="dup-role">' + esc(prev.jobTitle || '') + '</span>';
+      html += '<button class="dup-view" data-act="jump" data-hash="' + esc(u.hash) + '">View result \u2192</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function removeUpload(i) { uploads.splice(i, 1); renderUploadList(); updateScreenButton(); }
+function clearUploads() { uploads = []; renderUploadList(); updateScreenButton(); }
+
+function updateScreenButton() {
+  var btn = $('btnScreen');
+  var fresh = uploads.filter(function (u) { return !u.isDup && !u.err; });
+  btn.disabled = fresh.length === 0;
+  btn.textContent = fresh.length
+    ? '\u25B6 Screen ' + fresh.length + ' candidate' + (fresh.length !== 1 ? 's' : '')
+    : '\u25B6 Screen candidates';
+}
+
+function jumpToResult(hash) {
+  var idx = -1;
+  for (var i = 0; i < results.length; i++) { if (results[i].hash === hash) { idx = i; break; } }
+  if (idx >= 0) {
+    activeFilter = 'ALL';
+    goResults();
+    var ridx = idx;
+    setTimeout(function () { openCandidate(ridx); }, 220);
+  } else {
+    toast('Result not found \u2014 it may have been cleared', 'warn');
+  }
+}
+
+// ─── AI PROMPTS ──────────────────────────────────────────
+function buildSystemPrompt(job) {
+  var base = 'Demanding Procurri ITAD warehouse hiring manager, Carrollton TX. Hard to impress. '
+    + 'Score ONLY on evidence written in the resume; never assume or infer. '
+    + 'Skills listed but not shown in a job entry are UNVERIFIED and score near zero. '
+    + 'Most applicants are mediocre: aim most scores 30-60, few 65-79, rare 80+. '
+    + 'Uncertainty means score DOWN. Return ONLY valid JSON, no markdown.';
+  if (!job) return base + ' A candidate truly fits at most 1-2 of the 5 roles; score the others low.';
+  return base + ' Role: ' + job.title + '. Gaps: ' + job.gap;
+}
+
+function scoringRubric() {
+  return 'BANDS: 80-100=STRONG_HIRE (every must-have proven, ~10%). 65-79=INTERVIEW (one gap to probe, ~20%). '
+    + '45-64=WEAK (missing must-haves; most applicants). 20-44=POOR. 0-19=DISQUALIFIED.\n'
+    + 'CAPS (apply first): no physical/warehouse work in job history=max 45 for warehouse roles. '
+    + '"2+ years" not shown=NOT MET, no rounding up. Skills absent from job entries=score that dimension <30%. '
+    + '3+ jobs under 12mo unexplained=-10 to -15. Desk-only or director/VP for $18-22/hr=max 40. '
+    + 'Fresh grad needs real physical work (warehouse/kitchen/retail/construction/military/trades); coursework does not count. '
+    + 'If you would hesitate to interview today, it is NOT a STRONG_HIRE.\n'
+    + 'For each requirement output MET/NOT MET with an exact resume quote. No quote = NOT MET. Score must follow the evidence.\n';
+}
+
+function buildSinglePrompt(job, text) {
+  var y = new Date().getFullYear();
+  var sf = Object.keys(job.sc).map(function (k) { return '"' + k + 'Score":0-' + job.sc[k].w; }).join(',');
+  var wt = Object.keys(job.sc).map(function (k) { return job.sc[k].l + '=' + job.sc[k].w; }).join(', ');
+  return job.title + ' @ Procurri Carrollton TX (' + job.pay + '). Year ' + y + '.\n'
+    + 'MUST: ' + job.must.join(' | ') + '\n'
+    + 'NICE: ' + job.nice.join(' | ') + '\n'
+    + 'GAPS: ' + job.gap + '\nHIRE IF: ' + job.hire + '\nSKIP IF: ' + job.skip + '\n'
+    + 'POINT BUDGET: ' + wt + '. Award only for evidence; 0 where none. overallScore = sum.\n'
+    + scoringRubric()
+    + 'AGE: HS grad->born=gradYr-18; college->gradYr-22; earliest job only->jobYr-20. Show math. No dates->0/LOW.\n'
+    + 'RESUME:\n' + text + '\n'
+    + 'JSON only: {"candidateName":"","phone":"","email":"",'
+    + '"evidenceCheck":[{"requirement":"","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"}],'
+    + '"overallScore":0,' + sf + ',"recommendation":"STRONG_HIRE|INTERVIEW|SKIP",'
+    + '"estimatedAge":0,"ageCalculation":"","ageConfidence":"HIGH|MEDIUM|LOW",'
+    + '"hasCareerGaps":false,"gapVerdict":"FORGIVEN|PENALIZED|NO_GAPS","gapPenalty":0,"gapForgivenessReason":null,'
+    + '"workHistoryTags":[],"yearsExperience":0,"education":"",'
+    + '"positiveSignals":[],"concerns":[],'
+    + '"hrReasoning":"2 sentences: which must-haves met/unmet",'
+    + '"hmReasoning":"1 sentence: put them on the floor Monday or not",'
+    + '"suggestedInterviewQuestions":["3 probing the weakest areas"]}';
+}
+
+function buildScanAllPrompt(text) {
+  var y = new Date().getFullYear();
+  return 'Score ONE resume vs 5 Procurri roles, Carrollton TX. Year ' + y + '.\n'
+    + '1 ITAD Technician $18-22: hands-on IT hardware ID/test/troubleshoot, lift 50lb, warehouse.\n'
+    + '2 LifeCycle Operative $18-22: shipping/receiving, serial/asset verification, lift 50lb.\n'
+    + '3 Warehouse Associate $18-22: pick-pack, forklift, pallet jack, receiving, heavy lifting.\n'
+    + '4 Warehouse Team Lead $22-25: needs BOTH 2+yr warehouse AND stated supervisory/leading a team. Missing either = max 45.\n'
+    + '5 Hardware Technician $20-25: needs 2+yr enterprise IT hardware (server/storage/network). Help desk only = max 50.\n'
+    + scoringRubric()
+    + 'DIFFERENTIATE: a real person fits 1-2 roles, not all 5. No IT evidence -> roles 1&5 under 45. '
+    + 'Never supervised -> role 4 under 45. Similar scores across all 5 is wrong.\n'
+    + 'bestFitScore = highest role score. qualifiesForMultiple only if 2+ roles >=65.\n'
+    + 'AGE: HS->gradYr-18; college->gradYr-22; earliest job only->jobYr-20. Show math.\n'
+    + 'RESUME:\n' + text + '\n'
+    + 'JSON only: {"candidateName":"","phone":"","email":"",'
+    + '"evidenceCheck":[{"requirement":"physical/warehouse work","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"},'
+    + '{"requirement":"IT hardware hands-on","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"},'
+    + '{"requirement":"supervisory/leadership","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"}],'
+    + '"estimatedAge":0,"ageCalculation":"","ageConfidence":"HIGH|MEDIUM|LOW",'
+    + '"yearsExperience":0,"education":"","hasCareerGaps":false,"workHistoryTags":[],'
+    + '"bestFitRole":"","bestFitScore":0,"qualifiesForMultiple":false,"multipleRoleMatches":[],'
+    + '"roleScores":[{"jobId":"itad","jobTitle":"ITAD Technician","score":0,"recommendation":"SKIP","keyStrengths":[],"keyWeaknesses":[]},'
+    + '{"jobId":"lifecycle","jobTitle":"LifeCycle Services Operative","score":0,"recommendation":"SKIP","keyStrengths":[],"keyWeaknesses":[]},'
+    + '{"jobId":"warehouse","jobTitle":"Warehouse Associate","score":0,"recommendation":"SKIP","keyStrengths":[],"keyWeaknesses":[]},'
+    + '{"jobId":"teamlead","jobTitle":"Warehouse Team Lead","score":0,"recommendation":"SKIP","keyStrengths":[],"keyWeaknesses":[]},'
+    + '{"jobId":"hardware","jobTitle":"Hardware Technician","score":0,"recommendation":"SKIP","keyStrengths":[],"keyWeaknesses":[]}],'
+    + '"hrReasoning":"2 sentences","hmReasoning":"1 sentence","positiveSignals":[],"concerns":[],'
+    + '"suggestedInterviewQuestions":["3 questions"]}';
+}
+
+// ─── AI CALLS ────────────────────────────────────────────
+async function callAI(sys, usr) {
+  if (engine === 'ollama') return callOllama(sys, usr);
+  return callGroq(sys, usr);
+}
+
+async function callOllama(sys, usr) {
+  var model = ($('ollamaModel') && $('ollamaModel').value) || 'qwen3:8b';
+  var lastErr = null;
+  for (var t = 0; t < 3; t++) {
+    try {
+      var ctrl = new AbortController();
+      var killer = setTimeout(function () { ctrl.abort(); }, 180000); // 3 min hard cap
+      var res = await fetch(OLLAMA_URL + '/api/chat', {
+        signal: ctrl.signal,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'system', content: sys }, { role: 'user', content: usr }],
+          stream: false,
+          format: 'json',
+          think: false,              // qwen3 etc: skip chain-of-thought tokens (major speedup)
+          keep_alive: '30m',         // keep model resident between resumes
+          options: {
+            temperature: 0.05,
+            num_predict: 900,
+            num_ctx: 4096,           // smaller context = much faster prompt processing
+            top_k: 20,
+            top_p: 0.9
+          }
+        })
+      });
+      clearTimeout(killer);
+      if (!res.ok) throw new Error('Ollama HTTP ' + res.status);
+      var d = await res.json();
+      var raw = (d.message && d.message.content ? d.message.content : '').replace(/```json|```/g, '').trim();
+      if (!raw) throw new Error('Empty Ollama response');
+      return JSON.parse(raw);
+    } catch (e) {
+      lastErr = e;
+      if (e && e.name === 'AbortError') lastErr = new Error('Ollama timed out (3 min) \u2014 try a smaller model like qwen3:4b');
+      await sleep(1500);
+    }
+  }
+  throw lastErr || new Error('Ollama failed');
+}
+
+async function groqTestKey() {
+  var key = ($('groqKey') && $('groqKey').value.trim()) || '';
+  var st = $('groqTestStatus');
+  if (!key) { if (st) st.innerHTML = '<span style="color:var(--red)">\u26A0 Paste an API key first</span>'; return false; }
+  if (st) st.textContent = 'Testing key\u2026';
+  try {
+    var res = await fetch(GROQ_MODELS_URL, { headers: { 'Authorization': 'Bearer ' + key } });
+    if (res.status === 401) {
+      groqTested = false;
+      if (st) st.innerHTML = '<span style="color:var(--red)">\u26A0 Invalid key \u2014 get a free one at console.groq.com</span>';
+      updateEngineStatus();
+      return false;
+    }
+    if (!res.ok) {
+      groqTested = false;
+      if (st) st.innerHTML = '<span style="color:var(--red)">\u26A0 Groq error ' + res.status + '</span>';
+      return false;
+    }
+    var data = await res.json();
+    var ids = (data.data || []).map(function (m) { return m.id; }).filter(function (id) {
+      // exclude non-chat models
+      return id.indexOf('whisper') < 0 && id.indexOf('tts') < 0 && id.indexOf('guard') < 0 && id.indexOf('safeguard') < 0;
+    });
+    if (!ids.length) {
+      if (st) st.innerHTML = '<span style="color:var(--red)">\u26A0 Key valid but no chat models available</span>';
+      return false;
+    }
+    // populate dropdown
+    var sel = $('groqModel');
+    if (sel) {
+      sel.innerHTML = '';
+      ids.sort();
+      for (var i = 0; i < ids.length; i++) {
+        var o = document.createElement('option');
+        o.value = ids[i]; o.textContent = ids[i];
+        sel.appendChild(o);
+      }
+      // pick best available from preference list
+      var picked = '';
+      for (var p = 0; p < GROQ_PREFERRED.length; p++) {
+        if (ids.indexOf(GROQ_PREFERRED[p]) >= 0) { picked = GROQ_PREFERRED[p]; break; }
+      }
+      if (!picked) picked = ids[0];
+      sel.value = picked;
+      groqModel = picked;
+    }
+    groqTested = true;
+    saveGroqCfg();
+    if (st) st.innerHTML = '<span style="color:var(--green)">\u2705 Key works \u2014 ' + ids.length + ' models available \u00B7 using ' + esc(groqModel) + '</span>';
+    updateEngineStatus();
+    return true;
+  } catch (e) {
+    groqTested = false;
+    if (st) st.innerHTML = '<span style="color:var(--red)">\u26A0 Network error \u2014 check your connection</span>';
+    return false;
+  }
+}
+
+var GROQ_CFG_KEY = 'hustleradar_groq_cfg';
+function saveGroqCfg() {
+  try {
+    localStorage.setItem(GROQ_CFG_KEY, JSON.stringify({
+      key: ($('groqKey') && $('groqKey').value.trim()) || '',
+      model: groqModel
+    }));
+  } catch (e) { }
+}
+function loadGroqCfg() {
+  try {
+    var c = JSON.parse(localStorage.getItem(GROQ_CFG_KEY) || '{}');
+    if (c.key && $('groqKey')) $('groqKey').value = c.key;
+    if (c.model) {
+      groqModel = c.model;
+      var sel = $('groqModel');
+      if (sel && !sel.querySelector('option[value="' + c.model + '"]')) {
+        var o = document.createElement('option');
+        o.value = c.model; o.textContent = c.model;
+        sel.appendChild(o);
+      }
+      if (sel) sel.value = c.model;
+    }
+  } catch (e) { }
+}
+
+async function resolveGroqModel(key) {
+  if (groqModel) return groqModel;
+  // auto-discover without user pressing Test
+  try {
+    var res = await fetch(GROQ_MODELS_URL, { headers: { 'Authorization': 'Bearer ' + key } });
+    if (!res.ok) throw new Error('models ' + res.status);
+    var data = await res.json();
+    var ids = (data.data || []).map(function (m) { return m.id; });
+    for (var p = 0; p < GROQ_PREFERRED.length; p++) {
+      if (ids.indexOf(GROQ_PREFERRED[p]) >= 0) { groqModel = GROQ_PREFERRED[p]; return groqModel; }
+    }
+    if (ids.length) { groqModel = ids[0]; return groqModel; }
+  } catch (e) { }
+  groqModel = GROQ_PREFERRED[0];
+  return groqModel;
+}
+
+// Probes the chosen model with a 1-token call. Falls forward through the
+// preference list until one actually answers. Result cached for the session.
+// Reads the ACTUAL wait Groq reports rather than guessing.
+async function parseRetryWait(res) {
+  var hdr = res.headers && res.headers.get ? res.headers.get('retry-after') : null;
+  if (hdr) { var hv = parseFloat(hdr); if (!isNaN(hv) && hv > 0) return Math.ceil(hv); }
+  try {
+    var src = res.clone ? res.clone() : res;
+    var txt = await src.text();
+    var m = txt.match(/try again in ([\d.]+)\s*([ms])/i);
+    if (m) { var v = parseFloat(m[1]); if (m[2].toLowerCase() === 'm') v *= 60; if (!isNaN(v) && v > 0) return Math.max(1, Math.ceil(v)); }
+    var m2 = txt.match(/try again in ([\d.]+)/i);
+    if (m2) { var v2 = parseFloat(m2[1]); if (!isNaN(v2) && v2 > 0) return Math.max(1, Math.ceil(v2)); }
+  } catch (e) { }
+  var rt = res.headers && res.headers.get ? (res.headers.get('x-ratelimit-reset-tokens') || res.headers.get('x-ratelimit-reset-requests')) : null;
+  if (rt) { var rv = parseFloat(rt); if (!isNaN(rv) && rv > 0) return Math.max(1, Math.ceil(rv)); }
+  return 10;
+}
+
+// Live countdown so the user sees real progress.
+async function countdownWait(secs) {
+  var left = Math.max(1, secs);
+  toast('Rate limit \u2014 waiting ' + left + 's', 'warn');
+  while (left > 0) {
+    if ($('progStatus')) $('progStatus').textContent = 'Rate limit \u2014 resuming in ' + left + 's\u2026';
+    await sleep(1000);
+    left--;
+  }
+  if ($('progStatus')) $('progStatus').textContent = 'Resuming\u2026';
+}
+
+// Token-budget pacing driven by Groq's own headers. Before each call we know
+// roughly how many tokens we need; if the remaining budget is lower, we wait
+// exactly until it refills instead of slamming into a 429.
+var groqPace = { remaining: Infinity, resetSec: 0, at: 0 };
+var EST_TOKENS_PER_CALL = 2600;
+function readPaceHeaders(res) {
+  try {
+    if (!res.headers || !res.headers.get) return;
+    var rem = parseFloat(res.headers.get('x-ratelimit-remaining-tokens') || 'NaN');
+    var rst = parseFloat(res.headers.get('x-ratelimit-reset-tokens') || 'NaN');
+    if (!isNaN(rem)) { groqPace.remaining = rem; groqPace.at = Date.now(); }
+    if (!isNaN(rst)) groqPace.resetSec = rst;
+  } catch (e) { }
+}
+async function paceBeforeCall() {
+  if (groqPace.remaining === Infinity) return;
+  // budget knowledge older than 70s is stale — assume refilled
+  if (Date.now() - groqPace.at > 70000) { groqPace.remaining = Infinity; return; }
+  if (groqPace.remaining < EST_TOKENS_PER_CALL) {
+    var w = Math.max(2, Math.ceil(groqPace.resetSec || 8));
+    if ($('progStatus')) $('progStatus').textContent = 'Pacing for token budget \u2014 ' + w + 's\u2026';
+    await countdownWait(w);
+    groqPace.remaining = Infinity;
+  }
+}
+
+async function ensureWorkingGroqModel(key) {
+  var sel = $('groqModel');
+  if (sel && sel.value) groqModel = sel.value;
+
+  // Build candidate list from the LIVE model list on this account
+  var live = [];
+  try {
+    var lr = await fetch(GROQ_MODELS_URL, { headers: { 'Authorization': 'Bearer ' + key } });
+    if (lr.ok) {
+      var ld = await lr.json();
+      live = (ld.data || []).map(function (m) { return m.id; }).filter(function (id) {
+        return id.indexOf('whisper') < 0 && id.indexOf('tts') < 0 && id.indexOf('guard') < 0;
+      });
+    }
+  } catch (e) { }
+
+  var candidates = [];
+  // only trust the remembered model if the account actually still has it
+  if (groqModel && (live.length === 0 || live.indexOf(groqModel) >= 0)) candidates.push(groqModel);
+  for (var p = 0; p < GROQ_PREFERRED.length; p++) {
+    if (live.indexOf(GROQ_PREFERRED[p]) >= 0 && candidates.indexOf(GROQ_PREFERRED[p]) < 0) candidates.push(GROQ_PREFERRED[p]);
+  }
+  for (var q = 0; q < live.length && candidates.length < 6; q++) {
+    if (candidates.indexOf(live[q]) < 0) candidates.push(live[q]);
+  }
+  if (!candidates.length) candidates = GROQ_PREFERRED.slice();
+
+  // Validate with a REAL json request, not a 1-token ping — a ping can pass
+  // while the actual request shape fails.
+  for (var c = 0; c < candidates.length; c++) {
+    var m = candidates[c];
+    var jsonOk = true;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      var body = {
+        model: m,
+        messages: [
+          { role: 'system', content: 'Reply with JSON only.' },
+          { role: 'user', content: 'Return this exact JSON: {"ok":true}' }
+        ],
+        max_tokens: m.indexOf('gpt-oss') >= 0 ? 300 : 40,
+        temperature: 0
+      };
+      if (jsonOk) body.response_format = { type: 'json_object' };
+      if (m.indexOf('gpt-oss') >= 0) body.reasoning_effort = 'low';
+      try {
+        var res = await fetch(GROQ_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+          body: JSON.stringify(body)
+        });
+        if (res.status === 401) return '';
+        if (res.status === 429) {
+          // If it can't even answer a 40-token probe, it has no headroom for
+          // real screening — move on to a model with actual budget.
+          break;
+        }
+        if (res.status === 400 && jsonOk) { // strict JSON unsupported -> retry plain
+          jsonOk = false;
+          continue;
+        }
+        if (res.ok) {
+          readPaceHeaders(res);
+          // Probe passed, but if the account has under one call's worth of
+          // budget left on this model, it will die on the first real resume.
+          try {
+            var remHdr = res.headers && res.headers.get ? parseFloat(res.headers.get('x-ratelimit-remaining-tokens') || 'NaN') : NaN;
+            if (!isNaN(remHdr) && remHdr < EST_TOKENS_PER_CALL) break;  // next candidate
+          } catch (ehdr) { }
+          var d = await res.json();
+          var msg = d && d.choices && d.choices[0] ? d.choices[0].message : null;
+          var txt = msg ? (msg.content || msg.reasoning || '') : '';
+          try { extractJSON(txt); } catch (pe) {
+            if (jsonOk) { jsonOk = false; continue; }   // try plain mode
+            break;                                       // this model can't do JSON, next model
+          }
+          groqModel = m;
+          groqJsonMode = jsonOk;
+          applyModelChoice(m, sel);
+          return m;
+        }
+        break; // 404/5xx -> next candidate
+      } catch (e) { break; }
+    }
+  }
+  return '';
+}
+
+function applyModelChoice(m, sel) {
+  if (sel) {
+    if (!sel.querySelector('option[value="' + m + '"]')) {
+      var o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o);
+    }
+    sel.value = m;
+  }
+  groqTested = true;
+  saveGroqCfg();
+  updateEngineStatus();
+}
+
+// Pulls a JSON object out of whatever the model returned: fenced code,
+// reasoning preamble, trailing commentary, or clean JSON.
+function extractJSON(raw) {
+  if (!raw) throw new Error('Empty response');
+  var s = String(raw).trim();
+  s = s.replace(/```json/gi, '```').replace(/```/g, '').trim();
+  // fast path
+  if (s.charAt(0) === '{') {
+    try { return JSON.parse(s); } catch (e) { }
+  }
+  // find the outermost balanced {...}
+  var start = s.indexOf('{');
+  if (start < 0) throw new Error('No JSON found in response');
+  var depth = 0, inStr = false, escNext = false;
+  for (var i = start; i < s.length; i++) {
+    var ch = s.charAt(i);
+    if (escNext) { escNext = false; continue; }
+    if (ch === '\\') { escNext = true; continue; }
+    if (ch === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        var candidate = s.slice(start, i + 1);
+        try { return JSON.parse(candidate); } catch (e) {
+          // repair common truncation: trailing commas
+          try { return JSON.parse(candidate.replace(/,\s*([}\]])/g, '$1')); } catch (e2) { }
+        }
+      }
+    }
+  }
+  // truncated output: close what's open and try again
+  var tail = s.slice(start);
+  var opens = (tail.match(/{/g) || []).length - (tail.match(/}/g) || []).length;
+  var arrOpens = (tail.match(/\[/g) || []).length - (tail.match(/]/g) || []).length;
+  var patched = tail.replace(/,\s*$/, '');
+  for (var a = 0; a < arrOpens; a++) patched += ']';
+  for (var b = 0; b < opens; b++) patched += '}';
+  try { return JSON.parse(patched.replace(/,\s*([}\]])/g, '$1')); } catch (e) { }
+  throw new Error('Model returned unparseable JSON');
+}
+
+async function callGroq(sys, usr) {
+  var key = ($('groqKey') && $('groqKey').value.trim()) || GROQ_KEY_DEFAULT;
+  if (!key) throw new Error('No Groq API key \u2014 open \u2699 Engine and paste one (free at console.groq.com)');
+
+  var sel = $('groqModel');
+  if (sel && sel.value) groqModel = sel.value;
+  if (!groqModel) await resolveGroqModel(key);
+
+  var tries = 8;
+  var modelSwaps = 0;
+  var rateWaits = 0;
+  var useJsonMode = groqJsonMode;   // session-level: turned off permanently once it fails
+
+  while (tries > 0) {
+    tries--;
+    await paceBeforeCall();
+    var payload = {
+      model: groqModel,
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: usr }],
+      temperature: 0.05,
+      max_tokens: groqModel.indexOf('gpt-oss') >= 0 ? 1700 : 1000
+    };
+    if (useJsonMode) payload.response_format = { type: 'json_object' };
+    // gpt-oss are reasoning models: hidden thinking consumes max_tokens,
+    // so keep effort low AND give extra room so the JSON is not truncated.
+    if (groqModel.indexOf('gpt-oss') >= 0) payload.reasoning_effort = 'low';
+
+    var res;
+    try {
+      res = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify(payload)
+      });
+    } catch (netErr) {
+      throw new Error('Network error reaching Groq \u2014 check your connection');
+    }
+
+    if (res.status === 429) {
+      var w = await parseRetryWait(res);
+
+      // A wait over 30s means this model's minute/day budget is gone.
+      // Waiting is pointless — switch to a model that still has budget.
+      if (w > 30 && modelSwaps < 4) {
+        var exhausted = groqModel;
+        var alt = await resolveGroqModelExcluding(key, exhausted);
+        modelSwaps++;
+        if (alt && alt !== exhausted) {
+          groqModel = alt;
+          applyModelChoice(alt, sel);
+          toast('"' + exhausted + '" budget exhausted (' + w + 's) \u2014 switched to ' + alt, 'warn');
+          continue;
+        }
+        throw new Error('All Groq models exhausted (' + w + 's wait) \u2014 try later or switch to Ollama');
+      }
+
+      rateWaits++;
+      if (rateWaits > 3) {
+        throw new Error('Rate limited repeatedly \u2014 shown as error; use Rescan later');
+      }
+      await countdownWait(w);
+      tries++;               // a rate-limit wait shouldn't consume a retry
+      continue;
+    }
+
+    if (res.status === 401) throw new Error('Invalid Groq API key \u2014 open \u2699 Engine and test it');
+
+    // 404 = the model genuinely does not exist -> swap models
+    if (res.status === 404 && modelSwaps < 4) {
+      var gone = groqModel;
+      var next = await resolveGroqModelExcluding(key, gone);
+      modelSwaps++;
+      if (next && next !== gone) {
+        groqModel = next;
+        if (sel) {
+          if (!sel.querySelector('option[value="' + next + '"]')) {
+            var o = document.createElement('option'); o.value = next; o.textContent = next; sel.appendChild(o);
+          }
+          sel.value = next;
+        }
+        saveGroqCfg();
+        updateEngineStatus();
+        toast('Model "' + gone + '" not available \u2014 using ' + next, 'warn');
+        continue;
+      }
+      throw new Error('No available Groq model on this account');
+    }
+
+    // 400 is a REQUEST problem, not a model problem.
+    // Groq's strict JSON mode rejects some models' output ("Failed to validate JSON").
+    // Drop JSON mode for the rest of the session and parse the text ourselves.
+    if (res.status === 400) {
+      var body400 = '';
+      try { body400 = await res.text(); } catch (e) { }
+      if (useJsonMode) {
+        useJsonMode = false;
+        groqJsonMode = false;   // remember for every later call
+        continue;               // retry the SAME model without json mode
+      }
+      throw new Error('Groq rejected the request: ' + body400.slice(0, 100));
+    }
+
+    if (!res.ok) {
+      var errText = '';
+      try { errText = await res.text(); } catch (e) { }
+      // 5xx: transient, retry same model after a beat
+      if (res.status >= 500) { await sleep(1500); continue; }
+      throw new Error('Groq ' + res.status + ': ' + errText.slice(0, 90));
+    }
+
+    readPaceHeaders(res);
+    var d = await res.json();
+    var msg = d && d.choices && d.choices[0] ? d.choices[0].message : null;
+    var content = msg ? (msg.content || '') : '';
+    // Reasoning models sometimes put the answer in a reasoning field when content is empty
+    if (!content && msg && msg.reasoning) content = msg.reasoning;
+    if (!content) {
+      if (tries > 0) { await sleep(600); continue; }
+      throw new Error('Groq returned an empty response');
+    }
+
+    try {
+      return extractJSON(content);
+    } catch (parseErr) {
+      // Give it one more shot without JSON mode before failing this resume
+      if (useJsonMode) { useJsonMode = false; groqJsonMode = false; continue; }
+      if (tries > 0) { await sleep(500); continue; }
+      throw new Error('Could not parse model output as JSON');
+    }
+  }
+  throw new Error('Groq did not return a usable result after several attempts');
+}
+
+async function resolveGroqModelExcluding(key, exclude) {
+  try {
+    var res = await fetch(GROQ_MODELS_URL, { headers: { 'Authorization': 'Bearer ' + key } });
+    if (!res.ok) return '';
+    var data = await res.json();
+    var ids = (data.data || []).map(function (m) { return m.id; }).filter(function (id) {
+      return id !== exclude && id.indexOf('whisper') < 0 && id.indexOf('tts') < 0 && id.indexOf('guard') < 0;
+    });
+    for (var p = 0; p < GROQ_PREFERRED.length; p++) {
+      if (GROQ_PREFERRED[p] !== exclude && ids.indexOf(GROQ_PREFERRED[p]) >= 0) return GROQ_PREFERRED[p];
+    }
+    return ids.length ? ids[0] : '';
+  } catch (e) { return ''; }
+}
+
+// ─── SCREENING RUN ───────────────────────────────────────
+var batchRunning = false;
+
+async function runScreening() {
+  var isAll = jobIdx === -1;
+  var job = isAll ? null : JOBS[jobIdx];
+  var fresh = uploads.filter(function (u) { return !u.isDup && !u.err; });
+  if (!fresh.length) return;
+
+  if (engine === 'ollama' && !ollamaConnected) {
+    if (!window.confirm('Ollama does not appear to be running. Try anyway?')) { openEnginePanel(); return; }
+  }
+
+  // Warn on very large batches so the user knows what they're in for
+  if (fresh.length > 25 && engine === 'groq') {
+    var estMin = Math.ceil(fresh.length * 2315 / 30000);
+    if (!window.confirm('Screening ' + fresh.length + ' resumes on Groq\u2019s free tier will take roughly '
+      + estMin + '-' + (estMin + 2) + ' minutes because of rate limits.\n\n'
+      + 'Keep this tab open \u2014 progress is saved after every resume, so nothing is lost if you stop.\n\nContinue?')) return;
+  }
+
+  showScreen('screenProgress');
+  var engLabel = engine === 'ollama'
+    ? 'Ollama \u00B7 ' + (($('ollamaModel') && $('ollamaModel').value) || 'qwen3:8b')
+    : 'Groq \u00B7 llama-4-scout';
+  $('progSub').textContent = (isAll ? 'Scanning all 5 roles' : 'Screening: ' + job.title) + '  \u00B7  ' + engLabel;
+  $('progFill').style.width = '0%';
+  $('progStatus').textContent = 'Starting\u2026';
+  $('progLive').innerHTML = '';
+
+  // Resolve the working model ONCE up front so we don't re-discover on every resume
+  if (engine === 'groq') {
+    $('progStatus').textContent = 'Verifying Groq model\u2026';
+    var gk = ($('groqKey') && $('groqKey').value.trim()) || GROQ_KEY_DEFAULT;
+    if (!gk) {
+      toast('No Groq API key \u2014 open \u2699 Engine', 'err');
+      showScreen('screenSetup'); openEnginePanel(); return;
+    }
+    var okModel = await ensureWorkingGroqModel(gk);
+    if (!okModel) {
+      toast('Could not find a working Groq model \u2014 check your key in \u2699 Engine', 'err');
+      showScreen('screenSetup'); openEnginePanel(); return;
+    }
+    $('progSub').textContent = (isAll ? 'Scanning all 5 roles' : 'Screening: ' + job.title) + '  \u00B7  Groq \u00B7 ' + groqModel;
+    updateEngineStatus();
+  }
+
+  batchRunning = true;
+  var sys = buildSystemPrompt(job);
+  var batch = [];
+  var batchStart = Date.now();
+
+  for (var i = 0; i < fresh.length; i++) {
+    var u = fresh[i];
+    $('progFill').style.width = Math.round(i / fresh.length * 100) + '%';
+    var etaTxt = '';
+    if (i > 0) {
+      var elapsed = (Date.now() - batchStart) / 1000;
+      var remain = (elapsed / i) * (fresh.length - i);
+      etaTxt = '  \u00B7  ~' + formatEta(remain) + ' left';
+    }
+    $('progStatus').textContent = 'Processing ' + (i + 1) + ' of ' + fresh.length + ': ' + u.name.replace('.pdf', '') + etaTxt;
+    $('progFill').style.width = Math.round((i / fresh.length) * 100) + '%';
+
+    var liveId = 'live' + i;
+    var liveHtml = '<div class="live-card" id="' + liveId + '">' +
+      '<div class="spinner"></div>' +
+      '<div class="live-body"><div class="live-nm">' + esc(u.name.replace('.pdf', '')) + '</div>' +
+      '<div class="live-sub">' + (isAll ? 'Matching against 5 roles\u2026' : 'Analyzing\u2026') + '</div></div></div>';
+    $('progLive').insertAdjacentHTML('afterbegin', liveHtml);
+
+    var d;
+    try {
+      var usr = isAll ? buildScanAllPrompt(u.text) : buildSinglePrompt(job, u.text);
+      d = await callAI(sys, usr);
+      d = normalizeResult(d, isAll, job);
+      hist[u.hash] = d;
+
+      var liveEl = $(liveId);
+      if (liveEl) {
+        var lbl = isAll
+          ? 'Best fit: ' + esc(d.bestFitRole || '?') + ' \u00B7 ' + d.overallScore + '%'
+          : esc((d.recommendation || '').replace(/_/g, ' ')) + ' \u00B7 ' + d.overallScore + '%';
+        liveEl.innerHTML = '<div class="live-ic">' + recIcon(d.recommendation) + '</div>' +
+          '<div class="live-body"><div class="live-nm">' + esc(d.candidateName || u.name.replace('.pdf', '')) + '</div>' +
+          '<div class="live-sub" style="color:' + recColor(d.recommendation) + '">' + lbl + '</div></div>';
+      }
+      batch.push({ name: u.name, hash: u.hash, sizeKB: u.sizeKB, scoreData: d, ts: Date.now(), text: u.text });
+      persistPartial(batch);
+    } catch (e) {
+      d = errorResult(e, isAll, job);
+      var liveEl2 = $(liveId);
+      if (liveEl2) {
+        liveEl2.innerHTML = '<div class="live-ic">\u26A0\uFE0F</div>' +
+          '<div class="live-body"><div class="live-nm">' + esc(u.name.replace('.pdf', '')) + '</div>' +
+          '<div class="live-sub" style="color:var(--red)">Error: ' + esc(e.message.slice(0, 60)) + '</div></div>';
+      }
+      batch.push({ name: u.name, hash: u.hash, sizeKB: u.sizeKB, scoreData: d, ts: Date.now(), text: u.text });
+      persistPartial(batch);
+    }
+    $('progFill').style.width = Math.round((i + 1) / fresh.length * 100) + '%';
+    if (i < fresh.length - 1) {
+      if (engine === 'ollama') await sleep(200);
+      else if (groqPace.waitMs > 0) { await countdownWait(Math.ceil(groqPace.waitMs / 1000)); groqPace.waitMs = 0; }
+      else await sleep(350);
+    }
+  }
+
+  batchRunning = false;
+  persistPartial(batch);
+  sbUpsert(batch);
+  renderHome();
+  toast('Screened ' + batch.length + ' candidate' + (batch.length !== 1 ? 's' : ''), 'ok');
+  uploads = [];
+  renderUploadList();
+  updateScreenButton();
+  activeFilter = 'ALL';
+  searchTerm = '';
+  showResultsFor(isAll ? { title: 'All Roles', pay: 'Multiple', gap: 'Varies by role' } : job);
+}
+
+function normalizeResult(d, isAll, job) {
+  // Evidence-based guards applied in CODE so a lenient model cannot inflate past them.
+  var ev = d.evidenceCheck || [];
+  function evMet(keyword) {
+    for (var i = 0; i < ev.length; i++) {
+      var req = (ev[i].requirement || '').toLowerCase();
+      if (req.indexOf(keyword) >= 0) return (ev[i].verdict || '').toUpperCase().indexOf('NOT') < 0;
+    }
+    return null; // unknown
+  }
+
+  if (isAll) {
+    d.isScanAll = true; d.jobId = 'scanall'; d.jobTitle = 'All Roles';
+    var physOk = evMet('physical');
+    var itOk = evMet('it hardware');
+    var leadOk = evMet('supervis');
+
+    if (d.roleScores && d.roleScores.length) {
+      // Check flatness on the model's RAW output, before our caps spread them apart
+      var rawScores = d.roleScores.map(function (r) { return Math.round(r.score || 0); });
+      var rawMax = Math.max.apply(null, rawScores), rawMin = Math.min.apply(null, rawScores);
+      var wasFlat = (rawMax - rawMin) <= 8 && rawMax >= 60;
+
+      d.roleScores.forEach(function (rs) {
+        rs.score = Math.max(0, Math.min(100, Math.round(rs.score || 0)));
+        // Hard caps from evidence findings
+        if (physOk === false && (rs.jobId === 'itad' || rs.jobId === 'lifecycle' || rs.jobId === 'warehouse' || rs.jobId === 'teamlead')) {
+          rs.score = Math.min(rs.score, 45);
+        }
+        if (itOk === false && (rs.jobId === 'hardware' || rs.jobId === 'itad')) {
+          rs.score = Math.min(rs.score, rs.jobId === 'hardware' ? 40 : 50);
+        }
+        if (leadOk === false && rs.jobId === 'teamlead') {
+          rs.score = Math.min(rs.score, 45);
+        }
+        rs.recommendation = rs.score >= 80 ? 'STRONG_HIRE' : rs.score >= 65 ? 'INTERVIEW' : 'SKIP';
+      });
+
+      if (wasFlat) {
+        d.concerns = d.concerns || [];
+        d.concerns.push('AI scored all roles similarly \u2014 verify role fit manually');
+      }
+
+      var best = d.roleScores.reduce(function (a, b) { return b.score > a.score ? b : a; });
+      d.bestFitRole = best.jobTitle;
+      d.bestFitScore = best.score;
+      var strong = d.roleScores.filter(function (r) { return r.score >= 65; });
+      d.qualifiesForMultiple = strong.length >= 2;
+      d.multipleRoleMatches = strong.map(function (r) { return r.jobTitle; });
+    }
+    d.overallScore = Math.max(0, Math.min(100, Math.round(d.bestFitScore || 0)));
+    d.recommendation = d.overallScore >= 80 ? 'STRONG_HIRE' : d.overallScore >= 65 ? 'INTERVIEW' : 'SKIP';
+    d.gapVerdict = d.hasCareerGaps ? (d.gapVerdict === 'FORGIVEN' ? 'FORGIVEN' : 'PENALIZED') : 'NO_GAPS';
+    d.gapPenalty = d.gapPenalty || 0;
+  } else {
+    d.isScanAll = false; d.jobId = job.id; d.jobTitle = job.title;
+    if (d.overallScore > 0 && d.overallScore <= 1) d.overallScore = Math.round(d.overallScore * 100);
+
+    // Recompute from dimension scores when they are present — the sum is the truth.
+    var keys = Object.keys(job.sc);
+    var sum = 0, haveAll = true;
+    for (var k = 0; k < keys.length; k++) {
+      var v = d[keys[k] + 'Score'];
+      if (typeof v !== 'number') { haveAll = false; break; }
+      d[keys[k] + 'Score'] = Math.max(0, Math.min(job.sc[keys[k]].w, Math.round(v)));
+      sum += d[keys[k] + 'Score'];
+    }
+    if (haveAll) d.overallScore = sum;
+    d.overallScore = Math.max(0, Math.min(100, Math.round(d.overallScore || 0)));
+
+    // Gap penalty actually applied
+    if (d.hasCareerGaps && d.gapVerdict === 'PENALIZED' && d.gapPenalty) {
+      d.overallScore = Math.max(0, d.overallScore - Math.min(20, Math.abs(d.gapPenalty)));
+    }
+
+    // Any must-have marked NOT MET blocks a STRONG_HIRE
+    var anyUnmet = ev.some(function (e) { return (e.verdict || '').toUpperCase().indexOf('NOT') >= 0; });
+    if (anyUnmet && d.overallScore >= 80) d.overallScore = 79;
+
+    d.recommendation = d.overallScore >= 80 ? 'STRONG_HIRE' : d.overallScore >= 65 ? 'INTERVIEW' : 'SKIP';
+  }
+  return d;
+}
+
+function errorResult(e, isAll, job) {
+  return {
+    overallScore: 0, recommendation: 'SKIP',
+    hrReasoning: 'Processing error: ' + e.message, hmReasoning: '',
+    positiveSignals: [], concerns: ['AI processing error \u2014 re-screen this resume'],
+    workHistoryTags: [], yearsExperience: 0, education: '',
+    hasCareerGaps: false, gapVerdict: 'NO_GAPS', gapPenalty: 0, gapForgivenessReason: null,
+    suggestedInterviewQuestions: [],
+    jobId: isAll ? 'scanall' : (job ? job.id : ''), jobTitle: isAll ? 'All Roles' : (job ? job.title : ''),
+    isScanAll: isAll, estimatedAge: 'Unknown', ageCalculation: '', ageConfidence: 'UNKNOWN'
+  };
+}
+
+// ─── RESULTS ─────────────────────────────────────────────
+function showResultsFor(job) {
+  showScreen('screenResults');
+  $('resTitle').textContent = (job.title || 'All Roles') + ' \u2014 Candidate Rankings';
+  $('resSub').textContent = (job.pay || '') + ' \u00B7 Procurri Carrollton TX \u00B7 ' + results.length + ' screened total';
+  $('gapNotice').innerHTML = '\u26A0\uFE0F <strong>Gap policy:</strong> ' + esc(job.gap || 'Varies by role');
+  $('searchBox').value = searchTerm;
+  renderResults();
+}
+
+function getFiltered() {
+  var list;
+  if (activeFilter === 'ALL') {
+    // Hide rejected from the default view to keep it clean
+    list = results.filter(function (r) { return (stages[r.hash] || 'NEW') !== 'REJECTED'; });
+  } else if (activeFilter === 'SHORTLIST') {
+    list = results.filter(function (r) {
+      var s = stages[r.hash] || 'NEW';
+      return s === 'INTERVIEWING' || s === 'OFFER' || s === 'HIRED';
+    });
+  } else if (activeFilter === 'REJECTED') {
+    list = results.filter(function (r) { return (stages[r.hash] || 'NEW') === 'REJECTED'; });
+  } else {
+    list = results.filter(function (r) { return r.scoreData.recommendation === activeFilter; });
+  }
+  if (searchTerm) {
+    var q = searchTerm.toLowerCase();
+    list = list.filter(function (r) {
+      var d = r.scoreData;
+      var hay = ((d.candidateName || '') + ' ' + r.name + ' ' + (d.workHistoryTags || []).join(' ') + ' ' + (d.education || '')).toLowerCase();
+      return hay.indexOf(q) >= 0;
+    });
+  }
+  var sv = $('sortSel').value;
+  list.sort(function (a, b) {
+    var da = a.scoreData, db = b.scoreData;
+    if (sv === 'score') return (db.overallScore || 0) - (da.overallScore || 0);
+    if (sv === 'name') return (da.candidateName || a.name).localeCompare(db.candidateName || b.name);
+    if (sv === 'recent') return (b.ts || 0) - (a.ts || 0);
+    if (sv === 'rec') {
+      var o = { STRONG_HIRE: 0, INTERVIEW: 1, SKIP: 2 };
+      return (o[da.recommendation] !== undefined ? o[da.recommendation] : 2) - (o[db.recommendation] !== undefined ? o[db.recommendation] : 2);
+    }
+    return 0;
+  });
+  return list;
+}
+
+function renderResults() {
+  var sh = 0, iv = 0, sk = 0, sum = 0;
+  for (var i = 0; i < results.length; i++) {
+    var rec = results[i].scoreData.recommendation;
+    if (rec === 'STRONG_HIRE') sh++;
+    else if (rec === 'INTERVIEW') iv++;
+    else sk++;
+    sum += results[i].scoreData.overallScore || 0;
+  }
+  var avg = results.length ? Math.round(sum / results.length) : 0;
+
+  $('statsRow').innerHTML =
+    statCard('ALL', results.length, 'Total', '') +
+    statCard('STRONG_HIRE', sh, 'Strong Hire', 'green') +
+    statCard('INTERVIEW', iv, 'Interview', 'blue') +
+    statCard('SKIP', sk, 'Skip', 'red') +
+    '<div class="stat"><div class="stat-v" style="color:var(--muted)">' + avg + '%</div><div class="stat-l">Avg Score</div></div>';
+
+  // stage-based counts
+  var shortN = 0, rejN = 0;
+  for (var si = 0; si < results.length; si++) {
+    var stg = stages[results[si].hash] || 'NEW';
+    if (stg === 'INTERVIEWING' || stg === 'OFFER' || stg === 'HIRED') shortN++;
+    else if (stg === 'REJECTED') rejN++;
+  }
+  var activeCount = results.length - rejN; // ALL view hides rejected
+  var tabs = [['ALL', activeCount], ['STRONG_HIRE', sh], ['INTERVIEW', iv], ['SKIP', sk], ['SHORTLIST', shortN], ['REJECTED', rejN]];
+  var tHtml = '';
+  for (var t = 0; t < tabs.length; t++) {
+    var isStageTab = tabs[t][0] === 'SHORTLIST' || tabs[t][0] === 'REJECTED';
+    var lbl = tabs[t][0] === 'SHORTLIST' ? '\u2605 Shortlist' : tabs[t][0] === 'REJECTED' ? '\u2715 Rejected' : tabs[t][0].replace(/_/g, ' ');
+    tHtml += '<button class="ftab' + (activeFilter === tabs[t][0] ? ' on' : '') + (isStageTab ? ' ftab-stage' : '') + '" data-act="filter" data-f="' + tabs[t][0] + '">' +
+      lbl + ' (' + tabs[t][1] + ')</button>';
+  }
+  $('filterTabs').innerHTML = tHtml;
+
+  var list = getFiltered();
+  if (!list.length) {
+    $('resultsGrid').innerHTML = '<div class="empty">No candidates match this view</div>';
+    return;
+  }
+
+  var html = '';
+  for (var c = 0; c < list.length; c++) {
+    html += buildCard(list[c], c);
+  }
+  $('resultsGrid').innerHTML = html;
+}
+
+function statCard(filterKey, val, label, tone) {
+  var style = tone === 'green' ? 'border-color:var(--green);background:rgba(52,211,153,.07)' :
+    tone === 'blue' ? 'border-color:var(--blue);background:rgba(96,165,250,.07)' :
+      tone === 'red' ? 'border-color:var(--red);background:rgba(248,113,113,.07)' : '';
+  var vStyle = tone === 'green' ? 'color:var(--green)' : tone === 'blue' ? 'color:var(--blue)' : tone === 'red' ? 'color:var(--red)' : '';
+  return '<div class="stat clickable" data-act="filter" data-f="' + filterKey + '" style="' + style + '">' +
+    '<div class="stat-v" style="' + vStyle + '">' + val + '</div>' +
+    '<div class="stat-l" style="' + vStyle + '">' + label + '</div></div>';
+}
+
+function buildCard(r, cardIdx) {
+  var d = r.scoreData;
+  var realIdx = results.indexOf(r);
+  var job = null;
+  for (var j = 0; j < JOBS.length; j++) { if (JOBS[j].id === d.jobId) { job = JOBS[j]; break; } }
+  if (!job) job = JOBS[0];
+
+  var rec = d.recommendation || 'SKIP';
+  var score = d.overallScore || 0;
+  var tier = rec === 'STRONG_HIRE' ? 'sh' : rec === 'INTERVIEW' ? 'iv' : 'sk';
+  var cardStage = stages[r.hash] || 'NEW';
+  var rejClass = cardStage === 'REJECTED' ? ' rejected' : '';
+
+  var html = '<div class="rc ' + tier + rejClass + ' clickable" data-act="open" data-ri="' + realIdx + '">';
+
+  // header
+  html += '<div class="rc-top"><div class="rc-left">';
+  html += '<div class="rc-name">' + esc(d.candidateName || r.name.replace('.pdf', '')) + '</div>';
+  var ageStr = (d.estimatedAge && d.estimatedAge !== 'Unknown') ? '~' + d.estimatedAge + ' yrs old' : 'Age unknown';
+  html += '<div class="rc-meta">' + (d.yearsExperience || 0) + ' yr exp \u00B7 ' + esc(ageStr) + ' \u00B7 ' + esc(d.education || 'N/A') + '</div>';
+  if (d.isScanAll) {
+    html += '<div class="rc-best">Best fit: <strong>' + esc(d.bestFitRole || '?') + '</strong></div>';
+  } else if (d.jobTitle) {
+    html += '<div class="rc-role">' + esc(d.jobTitle) + '</div>';
+  }
+  html += '</div><div class="rc-right">';
+  html += '<span class="rbadge rb-' + tier + '">' + rec.replace(/_/g, ' ') + '</span>';
+  html += '<div class="rc-score c-' + tier + '">' + score + '%</div>';
+  html += '</div></div>';
+
+  // role matrix (scan all) or score bars
+  if (d.isScanAll && d.roleScores) {
+    html += '<div class="rmat"><div class="mini-lbl">Role fit</div>';
+    for (var rs = 0; rs < d.roleScores.length; rs++) {
+      var role = d.roleScores[rs];
+      var rcol = role.score >= 80 ? 'var(--green)' : role.score >= 60 ? 'var(--blue)' : 'var(--red)';
+      var best = role.jobTitle === d.bestFitRole;
+      html += '<div class="rmat-row' + (best ? ' best' : '') + '" style="' + (best ? 'border-color:' + rcol : '') + '">';
+      html += '<span class="rmat-nm" style="color:' + (best ? rcol : 'var(--muted)') + '">' + (best ? '\u2605 ' : '') + esc(role.jobTitle) + '</span>';
+      html += '<span class="rmat-bar"><span style="width:' + role.score + '%;background:' + rcol + '"></span></span>';
+      html += '<span class="rmat-pct" style="color:' + rcol + '">' + role.score + '%</span>';
+      html += '</div>';
+    }
+    if (d.qualifiesForMultiple && d.multipleRoleMatches && d.multipleRoleMatches.length) {
+      html += '<div class="multi-note">\u26A1 Multi-role match: ' + esc(d.multipleRoleMatches.join(', ')) + '</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="sbars">';
+    var keys = Object.keys(job.sc);
+    for (var k = 0; k < keys.length; k++) {
+      var s = job.sc[keys[k]];
+      var val = d[keys[k] + 'Score'] || 0;
+      var pct = Math.round(val / s.w * 100);
+      var col = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--blue)' : pct >= 25 ? 'var(--yellow)' : 'var(--red)';
+      html += '<div class="sbar"><span class="sbar-lbl">' + esc(s.l) + '</span>' +
+        '<span class="sbar-tr"><span style="width:' + pct + '%;background:' + col + '"></span></span>' +
+        '<span class="sbar-v" style="color:' + col + '">' + val + '/' + s.w + '</span></div>';
+    }
+    html += '</div>';
+  }
+
+  // gap chip
+  var gv = d.gapVerdict || 'NO_GAPS';
+  if (d.hasCareerGaps) {
+    if (gv === 'FORGIVEN') html += '<span class="gchip g-f">\uD83D\uDD35 Gaps forgiven</span>';
+    else html += '<span class="gchip g-p">\uD83D\uDD34 Gaps penalized' + (d.gapPenalty ? ' (\u2212' + d.gapPenalty + 'pts)' : '') + '</span>';
+  } else {
+    html += '<span class="gchip g-n">\u26AA No gaps</span>';
+  }
+
+  // evidence check — the audit trail behind the score
+  var ev = d.evidenceCheck || [];
+  if (ev.length) {
+    html += '<div class="m-sec"><div class="m-lbl">\u2713 Requirement verification</div>';
+    for (var e2 = 0; e2 < ev.length; e2++) {
+      var item = ev[e2];
+      var met = (item.verdict || '').toUpperCase().indexOf('NOT') < 0;
+      var ec = met ? 'var(--green)' : 'var(--red)';
+      html += '<div class="ev-row">';
+      html += '<span class="ev-mark" style="color:' + ec + '">' + (met ? '\u2713' : '\u2715') + '</span>';
+      html += '<div class="ev-body"><div class="ev-req">' + esc(item.requirement || '') + '</div>';
+      html += '<div class="ev-quote">' + (item.evidence && item.evidence !== 'NONE FOUND'
+        ? '\u201C' + esc(item.evidence) + '\u201D'
+        : '<span style="color:var(--red)">No supporting evidence in resume</span>') + '</div></div></div>';
+    }
+    html += '</div>';
+  }
+
+  // work tags
+  var tags = d.workHistoryTags || [];
+  if (tags.length) {
+    html += '<div class="tags">';
+    var tcls = ['t-b', 't-g', 't-p', 't-y', 't-gr'];
+    for (var tg = 0; tg < Math.min(tags.length, 7); tg++) {
+      html += '<span class="tag ' + tcls[tg % 5] + '">' + esc(tags[tg]) + '</span>';
+    }
+    html += '</div>';
+  }
+
+  var stg = stages[r.hash] || 'NEW';
+  if (stg !== 'NEW') {
+    var stc = STAGE_COLORS[stg] || 'var(--muted)';
+    html += '<span class="gchip" style="color:' + stc + ';border:1px solid ' + stc + '55;background:transparent;margin-left:6px">' + stg + '</span>';
+  }
+  var nCount = (notes[r.hash] || []).length;
+  var nLbl = nCount ? ' \u00B7 \uD83D\uDCDD ' + nCount + ' note' + (nCount !== 1 ? 's' : '') : '';
+  html += '<div class="rc-actions">';
+  html += '<button class="view-btn" data-act="open" data-ri="' + realIdx + '" style="flex:1">View profile' + nLbl + ' \u2192</button>';
+  if (stg === 'REJECTED') {
+    html += '<button class="qa-btn qa-restore" data-act="quickstage" data-hash="' + esc(r.hash) + '" data-stage="NEW" title="Restore to pipeline">\u21A9 Restore</button>';
+  } else {
+    html += '<button class="qa-btn qa-star" data-act="quickstage" data-hash="' + esc(r.hash) + '" data-stage="INTERVIEWING" title="Shortlist regardless of AI verdict">\u2605 Shortlist</button>';
+    html += '<button class="qa-btn qa-rej" data-act="quickstage" data-hash="' + esc(r.hash) + '" data-stage="REJECTED" title="Move to rejected">\u2715</button>';
+  }
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+// ─── CANDIDATE MODAL ─────────────────────────────────────
+function openCandidate(ri) {
+  var r = results[ri];
+  if (!r) return;
+  var d = r.scoreData;
+  var rec = d.recommendation || 'SKIP';
+  var score = d.overallScore || 0;
+  var rc = recColor(rec);
+  var job = null;
+  for (var j = 0; j < JOBS.length; j++) { if (JOBS[j].id === d.jobId) { job = JOBS[j]; break; } }
+  if (!job) job = JOBS[0];
+  var hasPDF = !!pdfStore[r.hash];
+
+  $('modalName').textContent = d.candidateName || r.name.replace('.pdf', '');
+  var ageStr = (d.estimatedAge && d.estimatedAge !== 'Unknown')
+    ? '~' + d.estimatedAge + ' (' + (d.ageConfidence || '?') + ' confidence)'
+    : 'Unknown';
+  var byStr = r.by ? ' \u00B7 Screened by ' + r.by : '';
+  $('modalMeta').textContent = (d.jobTitle || 'All Roles') + ' \u00B7 Age ' + ageStr + ' \u00B7 ' + (d.yearsExperience || 0) + ' yr exp \u00B7 ' + (d.education || 'N/A') + byStr;
+
+  var html = '';
+
+  // hero
+  html += '<div class="m-hero" style="background:' + recBg(rec) + ';border-color:' + rc + '40">';
+  html += '<div class="m-score" style="color:' + rc + '">' + score + '%</div>';
+  html += '<div class="m-hero-mid"><div class="m-rec" style="color:' + rc + '">' + rec.replace(/_/g, ' ') + '</div>';
+  if (d.isScanAll) html += '<div class="m-best">Best fit: <strong>' + esc(d.bestFitRole || '?') + '</strong></div>';
+  if (d.ageCalculation) html += '<div class="m-agecalc">' + esc(d.ageCalculation) + '</div>';
+  html += '</div>';
+  html += '<div class="m-hero-actions">';
+  var gv = d.gapVerdict || 'NO_GAPS';
+  var gc = gv === 'FORGIVEN' ? 'var(--blue)' : gv === 'PENALIZED' ? 'var(--red)' : 'var(--muted)';
+  html += '<span class="m-gap" style="color:' + gc + ';border-color:' + gc + '55">' + gv.replace(/_/g, ' ') + '</span>';
+  html += '<button class="m-pdf' + (hasPDF ? ' has' : '') + '" data-act="pdf" data-hash="' + esc(r.hash) + '" data-nm="' + esc(d.candidateName || r.name) + '">\uD83D\uDCC4 ' + (hasPDF ? 'View resume PDF' : 'Re-upload to view PDF') + '</button>';
+  if (r.text) html += '<button class="m-pdf" data-act="rescan" data-hash="' + esc(r.hash) + '" title="Re-screen with the currently selected role and engine">\u21BB Rescan</button>';
+  html += '</div></div>';
+
+  // score breakdown
+  html += '<div class="m-sec"><div class="m-lbl">Score breakdown</div>';
+  if (d.isScanAll && d.roleScores) {
+    for (var rs = 0; rs < d.roleScores.length; rs++) {
+      var role = d.roleScores[rs];
+      var col = role.score >= 80 ? 'var(--green)' : role.score >= 60 ? 'var(--blue)' : 'var(--red)';
+      var best = role.jobTitle === d.bestFitRole;
+      html += '<div class="m-bar"><span class="m-bar-lbl" style="color:' + (best ? col : 'var(--muted)') + '">' + (best ? '\u2605 ' : '') + esc(role.jobTitle) + '</span>' +
+        '<span class="m-bar-tr"><span style="width:' + role.score + '%;background:' + col + '"></span></span>' +
+        '<span class="m-bar-v" style="color:' + col + '">' + role.score + '%</span>' +
+        '<span class="m-bar-rec" style="background:' + recBg(role.recommendation) + ';color:' + recColor(role.recommendation) + '">' + (role.recommendation || '').replace(/_/g, ' ') + '</span></div>';
+    }
+  } else {
+    var keys2 = Object.keys(job.sc);
+    for (var k2 = 0; k2 < keys2.length; k2++) {
+      var s2 = job.sc[keys2[k2]];
+      var val2 = d[keys2[k2] + 'Score'] || 0;
+      var pct2 = Math.round(val2 / s2.w * 100);
+      var col2 = pct2 >= 75 ? 'var(--green)' : pct2 >= 50 ? 'var(--blue)' : pct2 >= 25 ? 'var(--yellow)' : 'var(--red)';
+      html += '<div class="m-bar"><span class="m-bar-lbl">' + esc(s2.l) + '</span>' +
+        '<span class="m-bar-tr"><span style="width:' + pct2 + '%;background:' + col2 + '"></span></span>' +
+        '<span class="m-bar-v" style="color:' + col2 + '">' + val2 + ' / ' + s2.w + '</span></div>';
+    }
+  }
+  html += '</div>';
+
+  // evidence check — the audit trail behind the score
+  var ev = d.evidenceCheck || [];
+  if (ev.length) {
+    html += '<div class="m-sec"><div class="m-lbl">\u2713 Requirement verification</div>';
+    for (var e2 = 0; e2 < ev.length; e2++) {
+      var item = ev[e2];
+      var met = (item.verdict || '').toUpperCase().indexOf('NOT') < 0;
+      var ec = met ? 'var(--green)' : 'var(--red)';
+      html += '<div class="ev-row">';
+      html += '<span class="ev-mark" style="color:' + ec + '">' + (met ? '\u2713' : '\u2715') + '</span>';
+      html += '<div class="ev-body"><div class="ev-req">' + esc(item.requirement || '') + '</div>';
+      html += '<div class="ev-quote">' + (item.evidence && item.evidence !== 'NONE FOUND'
+        ? '\u201C' + esc(item.evidence) + '\u201D'
+        : '<span style="color:var(--red)">No supporting evidence in resume</span>') + '</div></div></div>';
+    }
+    html += '</div>';
+  }
+
+  // work tags
+  var tags = d.workHistoryTags || [];
+  if (tags.length) {
+    html += '<div class="m-sec"><div class="m-lbl">Work background</div><div class="tags">';
+    for (var tg = 0; tg < tags.length; tg++) html += '<span class="tag t-b">' + esc(tags[tg]) + '</span>';
+    html += '</div></div>';
+  }
+
+  // reasoning
+  if (d.hrReasoning) {
+    html += '<div class="m-quote blue"><div class="m-qlbl" style="color:var(--blue)">HR assessment</div><div class="m-qtxt">' + esc(d.hrReasoning) + '</div></div>';
+  }
+  if (d.hmReasoning) {
+    html += '<div class="m-quote purple"><div class="m-qlbl" style="color:#c4b5fd">Hiring manager view</div><div class="m-qtxt">' + esc(d.hmReasoning) + '</div></div>';
+  }
+  if (d.gapForgivenessReason) {
+    html += '<div class="m-quote yellow"><div class="m-qlbl" style="color:var(--yellow)">Gap assessment</div><div class="m-qtxt">' + esc(d.gapForgivenessReason) + '</div></div>';
+  }
+
+  // signals
+  var pos = d.positiveSignals || [];
+  var con = d.concerns || [];
+  if (pos.length || con.length) {
+    html += '<div class="m-cols">';
+    if (pos.length) {
+      html += '<div class="m-col"><div class="m-lbl" style="color:var(--green)">Positive signals</div>';
+      for (var p = 0; p < pos.length; p++) html += '<div class="m-item"><span style="color:var(--green)">\u2713</span> ' + esc(pos[p]) + '</div>';
+      html += '</div>';
+    }
+    if (con.length) {
+      html += '<div class="m-col"><div class="m-lbl" style="color:var(--red)">Concerns</div>';
+      for (var cn = 0; cn < con.length; cn++) html += '<div class="m-item mut"><span style="color:var(--red)">\u26A0</span> ' + esc(con[cn]) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  // interview questions
+  var qs = d.suggestedInterviewQuestions || [];
+  if (qs.length) {
+    html += '<div class="m-sec"><div class="m-lbl">Suggested interview questions</div>';
+    for (var q = 0; q < qs.length; q++) {
+      html += '<div class="m-q"><span class="m-qn">Q' + (q + 1) + '</span>' + esc(qs[q]) + '</div>';
+    }
+    html += '</div>';
+  }
+
+  // pipeline stage selector
+  var curStage = stages[r.hash] || 'NEW';
+  html += '<div class="m-sec"><div class="m-lbl">Pipeline stage</div><div class="stage-row">';
+  for (var si = 0; si < STAGES.length; si++) {
+    var st = STAGES[si];
+    var sc3 = STAGE_COLORS[st];
+    var on = st === curStage;
+    html += '<button class="stage-btn' + (on ? ' on' : '') + '" data-act="stage" data-hash="' + esc(r.hash) + '" data-stage="' + st + '" style="' + (on ? 'background:' + sc3 + '22;border-color:' + sc3 + ';color:' + sc3 : '') + '">' + st + '</button>';
+  }
+  html += '</div></div>';
+
+  // contact info
+  if (d.phone || d.email) {
+    html += '<div class="m-sec"><div class="m-lbl">Contact</div><div style="display:flex;gap:9px;flex-wrap:wrap">';
+    if (d.phone) html += '<a class="contact-chip" href="tel:' + esc(d.phone) + '">\uD83D\uDCDE ' + esc(d.phone) + '</a><a class="contact-chip" href="sms:' + esc(d.phone) + '">\uD83D\uDCAC Text</a>';
+    if (d.email) html += '<a class="contact-chip" href="mailto:' + esc(d.email) + '">\u2709 ' + esc(d.email) + '</a>';
+    html += '</div></div>';
+  }
+
+  html += '<div class="m-sec"><div class="m-lbl">\uD83D\uDCDD Team notes</div>';
+  html += '<div id="notesList"></div>';
+  html += '<div class="note-add"><input type="text" id="noteInput" class="e-input" style="margin-bottom:0;flex:1" placeholder="Add a note \u2014 e.g. called, left voicemail\u2026">';
+  html += '<button class="btn btn-p btn-sm" data-act="addnote" data-hash="' + esc(r.hash) + '">Add</button></div>';
+  html += '</div>';
+
+  $('modalBody').innerHTML = html;
+  renderNotes(r.hash);
+  var ni = $('noteInput');
+  if (ni) {
+    ni.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { addNote(r.hash); }
+    });
+  }
+  $('candidateModal').classList.add('open');
+}
+
+function closeCandidate() { $('candidateModal').classList.remove('open'); }
+
+// ─── PDF VIEWING ─────────────────────────────────────────
+function viewPDF(hash, name) {
+  var f = pdfStore[hash];
+  if (f) {
+    window.open(URL.createObjectURL(f), '_blank');
+  } else {
+    toast('Re-upload ' + name + '\u2019s PDF on the home page to view it', 'warn');
+  }
+}
+
+// ─── HOME DASHBOARD ──────────────────────────────────────
+function renderHome() {
+  var panel = $('homePanel');
+  if (!results.length) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  var sh = 0, iv = 0, sk = 0;
+  for (var i = 0; i < results.length; i++) {
+    var rec = results[i].scoreData.recommendation;
+    if (rec === 'STRONG_HIRE') sh++;
+    else if (rec === 'INTERVIEW') iv++;
+    else sk++;
+  }
+
+  $('homeStats').innerHTML =
+    '<div class="hstat clickable" data-act="gores" data-f="ALL"><div class="hstat-v">' + results.length + '</div><div class="hstat-l">Total screened</div></div>' +
+    '<div class="hstat clickable green" data-act="gores" data-f="STRONG_HIRE"><div class="hstat-v" style="color:var(--green)">' + sh + '</div><div class="hstat-l" style="color:var(--green)">Strong hire</div></div>' +
+    '<div class="hstat clickable blue" data-act="gores" data-f="INTERVIEW"><div class="hstat-v" style="color:var(--blue)">' + iv + '</div><div class="hstat-l" style="color:var(--blue)">Interview</div></div>' +
+    '<div class="hstat clickable red" data-act="gores" data-f="SKIP"><div class="hstat-v" style="color:var(--red)">' + sk + '</div><div class="hstat-l" style="color:var(--red)">Skip</div></div>';
+
+  var top = results.slice().sort(function (a, b) {
+    return (b.scoreData.overallScore || 0) - (a.scoreData.overallScore || 0);
+  }).slice(0, 8);
+
+  var html = '';
+  for (var t = 0; t < top.length; t++) {
+    var r = top[t];
+    var d = r.scoreData;
+    var ri = results.indexOf(r);
+    var rec2 = d.recommendation || 'SKIP';
+    html += '<div class="recent-row clickable" data-act="open" data-ri="' + ri + '">';
+    html += '<span class="recent-ic">' + recIcon(rec2) + '</span>';
+    html += '<div class="recent-mid"><div class="recent-nm">' + esc(d.candidateName || r.name.replace('.pdf', '')) + '</div>';
+    html += '<div class="recent-sub">' + esc(d.jobTitle || '') + ' \u00B7 ' + (d.yearsExperience || 0) + ' yr \u00B7 Age ~' + esc(String(d.estimatedAge || '?')) + '</div></div>';
+    html += '<span class="recent-badge" style="background:' + recBg(rec2) + ';color:' + recColor(rec2) + '">' + rec2.replace(/_/g, ' ') + '</span>';
+    html += '<span class="recent-sc" style="color:' + recColor(rec2) + '">' + (d.overallScore || 0) + '%</span>';
+    html += '</div>';
+  }
+  $('recentList').innerHTML = html;
+}
+
+// ─── ENGINE PANEL ────────────────────────────────────────
+function closeSyncPanel() { $('syncPanel').classList.remove('open'); }
+function toggleSync(on) {
+  syncEnabled = on;
+  saveSyncCfg();
+  updateSyncStatus();
+  if (on && sbUrl && sbKey) {
+    toast('Team sync resumed', 'ok');
+    sbTest().then(function (ok) { if (ok) sbFetchAll().then(function () { renderHome(); renderResults(); }); });
+  } else {
+    syncState = 'off';
+    toast('Team sync paused \u2014 working offline, nothing sent to Supabase', 'warn');
+  }
+}
+function openEnginePanel() { $('enginePanel').classList.add('open'); checkOllama(); }
+function closeEnginePanel() { $('enginePanel').classList.remove('open'); updateEngineStatus(); }
+
+function selectEngine(e) {
+  engine = e;
+  $('engOptOllama').classList.toggle('esel', e === 'ollama');
+  $('engOptGroq').classList.toggle('esel', e === 'groq');
+  $('ollamaPane').style.display = e === 'ollama' ? 'block' : 'none';
+  $('groqPane').style.display = e === 'groq' ? 'block' : 'none';
+  updateEngineStatus();
+}
+
+async function checkOllama() {
+  var el = $('ollamaStatus');
+  el.textContent = 'Checking localhost:11434\u2026';
+  try {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, 4000);
+    var res = await fetch(OLLAMA_URL + '/api/tags', { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      var d = await res.json();
+      var models = (d.models || []).map(function (m) { return m.name; });
+      ollamaConnected = true;
+      el.innerHTML = '<span style="color:var(--green)">\u2705 Connected \u2014 ' + models.length + ' model(s) installed</span>';
+      if (models.length) {
+        var sel = $('ollamaModel');
+        var existing = [];
+        for (var o = 0; o < sel.options.length; o++) existing.push(sel.options[o].value);
+        models.forEach(function (m) {
+          if (existing.indexOf(m) < 0) {
+            var opt = document.createElement('option');
+            opt.value = m; opt.textContent = m + ' (installed)';
+            sel.appendChild(opt);
+          }
+        });
+        var prefs = ['qwen3:4b', 'gemma4:e4b', 'qwen3:8b', 'llama3.2', 'qwen3', 'gemma4'];
+        for (var pi = 0; pi < prefs.length; pi++) {
+          var found = models.filter(function (m) { return m.indexOf(prefs[pi]) === 0; })[0];
+          if (found) { sel.value = found; break; }
+        }
+      }
+    } else {
+      ollamaConnected = false;
+      el.innerHTML = '<span style="color:var(--red)">\u26A0 Not running \u2014 start with: ollama serve</span>';
+    }
+  } catch (e) {
+    ollamaConnected = false;
+    el.innerHTML = '<span style="color:var(--red)">\u26A0 Not found \u2014 install from ollama.com, then run: ollama serve</span>';
+  }
+  updateEngineStatus();
+}
+
+function updateEngineStatus() {
+  var dot = $('statusDot');
+  var lbl = $('statusLbl');
+  if (engine === 'ollama') {
+    dot.className = 'dot ' + (ollamaConnected ? 'dg' : 'dr');
+    lbl.textContent = ollamaConnected
+      ? 'Ollama \u00B7 ' + (($('ollamaModel') && $('ollamaModel').value) || 'qwen3:8b')
+      : 'Ollama \u00B7 Offline';
+  } else {
+    dot.className = 'dot ' + (groqTested ? 'dg' : 'dy');
+    lbl.textContent = 'Groq \u00B7 ' + (groqModel ? groqModel.split('/').pop() : 'not tested');
+  }
+}
+
+// ─── CSV EXPORT ──────────────────────────────────────────
+function exportCSV() {
+  if (!results.length) { toast('Nothing to export yet', 'warn'); return; }
+  var job = JOBS[Math.max(0, jobIdx)] || JOBS[0];
+  var scKeys = Object.keys(job.sc).map(function (k) { return { key: k + 'Score', lbl: job.sc[k].l }; });
+  var hdr = ['Name', 'File', 'Role', 'Score', 'Recommendation', 'Age', 'Age Confidence', 'Has Gaps', 'Gap Verdict', 'Gap Penalty'];
+  scKeys.forEach(function (s) { hdr.push(s.lbl); });
+  hdr = hdr.concat(['Years Exp', 'Education', 'Work Tags', 'Positive Signals', 'Concerns', 'HR Reasoning', 'HM Reasoning']);
+
+  var rows = results.map(function (r) {
+    var d = r.scoreData;
+    var cells = [
+      d.candidateName || r.name, r.name, d.jobTitle || '', d.overallScore || 0, d.recommendation || '',
+      d.estimatedAge || '', d.ageConfidence || '', d.hasCareerGaps || false, d.gapVerdict || '', d.gapPenalty || 0
+    ];
+    scKeys.forEach(function (s) { cells.push(d[s.key] || 0); });
+    cells = cells.concat([
+      d.yearsExperience || 0, d.education || '',
+      (d.workHistoryTags || []).join('; '),
+      (d.positiveSignals || []).join('; '),
+      (d.concerns || []).join('; '),
+      (d.hrReasoning || '').replace(/"/g, "'"),
+      (d.hmReasoning || '').replace(/"/g, "'")
+    ]);
+    return cells.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+  });
+
+  var blob = new Blob([[hdr.map(function (h) { return '"' + h + '"'; }).join(',')].concat(rows).join('\n')], { type: 'text/csv' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'HustleRadar_Procurri_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  toast('CSV exported', 'ok');
+}
+
+// ─── CLEAR HISTORY ───────────────────────────────────────
+function clearHistory() {
+  if (!window.confirm('Clear ALL screening history? This cannot be undone.')) return;
+  var alsoCloud = false;
+  if (sbConfigured()) {
+    alsoCloud = window.confirm('Also clear the SHARED team database? (Cancel = clear only this browser)');
+  }
+  hist = {}; results = []; notes = {}; stages = {};
+  saveData();
+  if (alsoCloud) sbClearAll();
+  toast(alsoCloud ? 'Local + team history cleared' : 'Local history cleared', 'ok');
+  renderHome();
+  goHome();
+}
+
+// Saves after every single resume so a browser crash or closed tab
+// never costs more than the one in flight.
+function persistPartial(batch) {
+  try {
+    var kept = results.filter(function (r) {
+      return !batch.some(function (b) { return b.hash === r.hash; });
+    });
+    results = batch.concat(kept);
+    saveData();
+  } catch (e) { }
+}
+
+// Human-readable ETA for large batches
+function formatEta(secs) {
+  if (secs < 60) return Math.ceil(secs) + 's';
+  var m = Math.floor(secs / 60), s = Math.round(secs % 60);
+  return m + 'm ' + (s < 10 ? '0' : '') + s + 's';
+}
+
+// ─── RESCAN ──────────────────────────────────────────────
+async function rescanOne(hash) {
+  var r = null;
+  for (var i = 0; i < results.length; i++) { if (results[i].hash === hash) { r = results[i]; break; } }
+  if (!r) { toast('Candidate not found', 'warn'); return; }
+  if (!r.text) {
+    toast('Original resume text not stored \u2014 re-upload the PDF to rescan', 'warn');
+    return;
+  }
+  await rescanBatch([r]);
+}
+
+async function rescanAllVisible() {
+  var list = getFiltered().filter(function (r) { return r.text; });
+  var noText = getFiltered().length - list.length;
+  if (!list.length) {
+    toast('No rescannable candidates \u2014 re-upload PDFs first', 'warn');
+    return;
+  }
+  var msg = 'Re-screen ' + list.length + ' candidate(s) with the current role and engine?';
+  if (noText) msg += '\n\n(' + noText + ' skipped \u2014 uploaded before rescan support; re-upload those PDFs.)';
+  if (!window.confirm(msg)) return;
+  await rescanBatch(list);
+}
+
+async function rescanBatch(list) {
+  var isAll = jobIdx === -1;
+  var job = isAll ? null : JOBS[jobIdx];
+  showScreen('screenProgress');
+  if (engine === 'groq') {
+    var rk = ($('groqKey') && $('groqKey').value.trim()) || GROQ_KEY_DEFAULT;
+    if (rk) await ensureWorkingGroqModel(rk);
+  }
+  var engLabel = engine === 'ollama'
+    ? 'Ollama \u00B7 ' + (($('ollamaModel') && $('ollamaModel').value) || 'qwen3:4b')
+    : 'Groq \u00B7 ' + (groqModel || 'auto');
+  $('progSub').textContent = 'Re-screening ' + list.length + ' candidate(s) \u00B7 ' + (isAll ? 'All 5 roles' : job.title) + '  \u00B7  ' + engLabel;
+  $('progFill').style.width = '0%';
+  $('progLive').innerHTML = '';
+  var sys = buildSystemPrompt(job);
+
+  for (var i = 0; i < list.length; i++) {
+    var r = list[i];
+    $('progFill').style.width = Math.round(i / list.length * 100) + '%';
+    $('progStatus').textContent = 'Re-screening ' + (i + 1) + ' of ' + list.length + ': ' + (r.scoreData.candidateName || r.name);
+    var lid = 'rs' + i;
+    $('progLive').insertAdjacentHTML('afterbegin',
+      '<div class="live-card" id="' + lid + '"><div class="spinner"></div><div class="live-body"><div class="live-nm">' +
+      esc(r.scoreData.candidateName || r.name.replace('.pdf', '')) + '</div><div class="live-sub">Re-screening\u2026</div></div></div>');
+    try {
+      var usr = isAll ? buildScanAllPrompt(r.text) : buildSinglePrompt(job, r.text);
+      var d = await callAI(sys, usr);
+      d = normalizeResult(d, isAll, job);
+      var oldScore = r.scoreData.overallScore || 0;
+      r.scoreData = d;
+      hist[r.hash] = d;
+      var delta = (d.overallScore || 0) - oldScore;
+      var dStr = delta === 0 ? 'no change' : (delta > 0 ? '+' : '') + delta + ' pts';
+      var le = $(lid);
+      if (le) le.innerHTML = '<div class="live-ic">' + recIcon(d.recommendation) + '</div><div class="live-body"><div class="live-nm">' +
+        esc(d.candidateName || r.name.replace('.pdf', '')) + '</div><div class="live-sub" style="color:' + recColor(d.recommendation) + '">' +
+        (d.recommendation || '').replace(/_/g, ' ') + ' \u00B7 ' + (d.overallScore || 0) + '% (' + dStr + ')</div></div>';
+    } catch (e) {
+      var le2 = $(lid);
+      if (le2) le2.innerHTML = '<div class="live-ic">\u26A0\uFE0F</div><div class="live-body"><div class="live-nm">' +
+        esc(r.name.replace('.pdf', '')) + '</div><div class="live-sub" style="color:var(--red)">' + esc(e.message.slice(0, 70)) + '</div></div>';
+    }
+    $('progFill').style.width = Math.round((i + 1) / list.length * 100) + '%';
+    await sleep(engine === 'ollama' ? 300 : 1500);
+  }
+
+  saveData();
+  sbUpsert(list);
+  renderHome();
+  toast('Re-screened ' + list.length + ' candidate(s)', 'ok');
+  showResultsFor(isAll ? { title: 'All Roles', pay: 'Multiple', gap: 'Varies by role' } : job);
+}
+
+// ─── OUTREACH CENTER ─────────────────────────────────────
+var VAPI_CFG_KEY = 'hustleradar_vapi_cfg';
+
+function outreachTargets() {
+  return results.filter(function (r) {
+    var rec = r.scoreData.recommendation;
+    var inc = $('orIncludeInterview') && $('orIncludeInterview').checked;
+    return rec === 'STRONG_HIRE' || (inc && rec === 'INTERVIEW');
+  });
+}
+
+function buildMessage(tpl, r) {
+  var d = r.scoreData;
+  return tpl
+    .replace(/\{name\}/g, (d.candidateName || r.name.replace('.pdf', '')).split(' ')[0])
+    .replace(/\{fullname\}/g, d.candidateName || r.name.replace('.pdf', ''))
+    .replace(/\{role\}/g, d.isScanAll ? (d.bestFitRole || 'a warehouse role') : (d.jobTitle || 'a warehouse role'));
+}
+
+function openOutreach() {
+  $('outreachPanel').classList.add('open');
+  renderOutreach();
+}
+function closeOutreach() { $('outreachPanel').classList.remove('open'); }
+
+function renderOutreach() {
+  var list = outreachTargets();
+  var tpl = $('orTemplate').value;
+  var box = $('orList');
+  if (!list.length) {
+    box.innerHTML = '<div style="font-size:12px;color:var(--dim);padding:14px 0;text-align:center">No Strong Hires yet \u2014 screen some resumes first.</div>';
+    $('orCount').textContent = '0 candidates';
+    return;
+  }
+  $('orCount').textContent = list.length + ' candidate' + (list.length !== 1 ? 's' : '');
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var r = list[i];
+    var d = r.scoreData;
+    var msg = buildMessage(tpl, r);
+    var phone = (d.phone || '').replace(/[^+\d]/g, '');
+    var stg = stages[r.hash] || 'NEW';
+    var sc = STAGE_COLORS[stg];
+    html += '<div class="or-row">';
+    html += '<input type="checkbox" class="or-chk" data-act="or-toggle" data-hash="' + esc(r.hash) + '" checked>';
+    html += '<div class="or-mid"><div class="or-nm">' + esc(d.candidateName || r.name.replace('.pdf', '')) + ' <span style="font-size:9px;color:' + sc + ';font-weight:800">' + stg + '</span></div>';
+    html += '<div class="or-ph">' + (phone ? '\uD83D\uDCDE ' + esc(d.phone) : '<span style="color:var(--red)">No phone found \u2014 open PDF to check</span>') + (d.email ? ' \u00B7 \u2709 ' + esc(d.email) : '') + '</div></div>';
+    if (phone) {
+      html += '<a class="btn btn-g btn-sm" href="sms:' + esc(phone) + '?&body=' + encodeURIComponent(msg) + '">SMS</a>';
+    }
+    html += '<button class="btn btn-g btn-sm" data-act="or-copy" data-msg="' + encodeURIComponent(msg) + '">Copy</button>';
+    html += '</div>';
+  }
+  box.innerHTML = html;
+}
+
+function selectedOutreach() {
+  var out = [];
+  var chks = document.querySelectorAll('#orList .or-chk');
+  for (var i = 0; i < chks.length; i++) {
+    if (chks[i].checked) {
+      var h = chks[i].getAttribute('data-hash');
+      for (var j = 0; j < results.length; j++) { if (results[j].hash === h) { out.push(results[j]); break; } }
+    }
+  }
+  return out;
+}
+
+function markSelectedContacted() {
+  var sel = selectedOutreach();
+  for (var i = 0; i < sel.length; i++) {
+    stages[sel[i].hash] = 'CONTACTED';
+    sbPushStage(sel[i].hash);
+  }
+  saveData();
+  toast('Marked ' + sel.length + ' as CONTACTED', 'ok');
+  renderOutreach();
+  renderResults();
+}
+
+function copyAllMessages() {
+  var sel = selectedOutreach();
+  var tpl = $('orTemplate').value;
+  var lines = sel.map(function (r) {
+    var d = r.scoreData;
+    return (d.candidateName || r.name) + ' \u2014 ' + (d.phone || 'NO PHONE') + '\n' + buildMessage(tpl, r);
+  });
+  var text = lines.join('\n\n---\n\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { toast('Copied ' + sel.length + ' messages', 'ok'); });
+  }
+}
+
+function exportOutreachCSV() {
+  var sel = selectedOutreach();
+  var tpl = $('orTemplate').value;
+  var hdr = '"Name","Phone","Email","Role","Score","Message"';
+  var rows = sel.map(function (r) {
+    var d = r.scoreData;
+    return ['"' + (d.candidateName || r.name).replace(/"/g, '""') + '"',
+      '"' + (d.phone || '') + '"', '"' + (d.email || '') + '"',
+      '"' + (d.isScanAll ? d.bestFitRole : d.jobTitle) + '"', d.overallScore || 0,
+      '"' + buildMessage(tpl, r).replace(/"/g, '""') + '"'].join(',');
+  });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([[hdr].concat(rows).join('\n')], { type: 'text/csv' }));
+  a.download = 'Outreach_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+
+function loadVapiCfg() {
+  try {
+    var c = JSON.parse(localStorage.getItem(VAPI_CFG_KEY) || '{}');
+    if ($('vapiKey')) $('vapiKey').value = c.key || '';
+    if ($('vapiAssistant')) $('vapiAssistant').value = c.assistant || '';
+    if ($('vapiPhoneId')) $('vapiPhoneId').value = c.phoneId || '';
+  } catch (e) { }
+}
+function saveVapiCfg() {
+  try {
+    localStorage.setItem(VAPI_CFG_KEY, JSON.stringify({
+      key: $('vapiKey').value.trim(),
+      assistant: $('vapiAssistant').value.trim(),
+      phoneId: $('vapiPhoneId').value.trim()
+    }));
+  } catch (e) { }
+}
+
+async function queueVapiCalls() {
+  var key = $('vapiKey').value.trim();
+  var assistant = $('vapiAssistant').value.trim();
+  var phoneId = $('vapiPhoneId').value.trim();
+  if (!key || !assistant || !phoneId) { toast('Fill in all three Vapi fields first', 'warn'); return; }
+  saveVapiCfg();
+  var sel = selectedOutreach().filter(function (r) { return r.scoreData.phone; });
+  if (!sel.length) { toast('No selected candidates have phone numbers', 'warn'); return; }
+  if (!window.confirm('Queue AI phone calls to ' + sel.length + ' candidate(s) via Vapi?')) return;
+  var ok = 0, fail = 0;
+  for (var i = 0; i < sel.length; i++) {
+    var r = sel[i];
+    var d = r.scoreData;
+    try {
+      var res = await fetch('https://api.vapi.ai/call', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistantId: assistant,
+          phoneNumberId: phoneId,
+          customer: { number: d.phone.replace(/[^+\d]/g, ''), name: d.candidateName || r.name },
+          assistantOverrides: {
+            variableValues: {
+              candidateName: d.candidateName || '',
+              role: d.isScanAll ? (d.bestFitRole || '') : (d.jobTitle || ''),
+              questions: (d.suggestedInterviewQuestions || []).join(' | ')
+            }
+          }
+        })
+      });
+      if (res.ok) { ok++; stages[r.hash] = 'CONTACTED'; sbPushStage(r.hash); }
+      else fail++;
+    } catch (e) { fail++; }
+    await sleep(400);
+  }
+  saveData(); renderOutreach(); renderResults();
+  toast('Vapi: ' + ok + ' queued' + (fail ? ', ' + fail + ' failed' : ''), fail ? 'warn' : 'ok');
+}
+
+// ─── GLOBAL EVENT DELEGATION ─────────────────────────────
+function onGlobalClick(ev) {
+  var t = ev.target.closest('[data-act]');
+  if (!t) return;
+  var act = t.getAttribute('data-act');
+
+  if (act === 'open') {
+    var ri = parseInt(t.getAttribute('data-ri'), 10);
+    openCandidate(ri);
+  } else if (act === 'filter') {
+    activeFilter = t.getAttribute('data-f');
+    renderResults();
+  } else if (act === 'gores') {
+    activeFilter = t.getAttribute('data-f') || 'ALL';
+    goResults();
+  } else if (act === 'rmfile') {
+    ev.stopPropagation();
+    removeUpload(parseInt(t.getAttribute('data-i'), 10));
+  } else if (act === 'jump') {
+    ev.stopPropagation();
+    jumpToResult(t.getAttribute('data-hash'));
+  } else if (act === 'pdf') {
+    ev.stopPropagation();
+    viewPDF(t.getAttribute('data-hash'), t.getAttribute('data-nm') || 'this candidate');
+  } else if (act === 'seljob') {
+    selectJob(parseInt(t.getAttribute('data-job'), 10));
+  } else if (act === 'addnote') {
+    ev.stopPropagation();
+    addNote(t.getAttribute('data-hash'));
+  } else if (act === 'quickstage') {
+    ev.stopPropagation();
+    var qh = t.getAttribute('data-hash');
+    var qstage = t.getAttribute('data-stage');
+    setStage(qh, qstage);
+    var qname = '';
+    for (var qi = 0; qi < results.length; qi++) { if (results[qi].hash === qh) { qname = results[qi].scoreData.candidateName || results[qi].name.replace('.pdf',''); break; } }
+    if (qstage === 'REJECTED') toast(qname + ' \u2192 Rejected', 'warn');
+    else if (qstage === 'INTERVIEWING') toast(qname + ' \u2192 Shortlisted', 'ok');
+    else if (qstage === 'NEW') toast(qname + ' restored to pipeline', 'ok');
+  } else if (act === 'stage') {
+    ev.stopPropagation();
+    var sh2 = t.getAttribute('data-hash');
+    setStage(sh2, t.getAttribute('data-stage'));
+    var rIdx = -1;
+    for (var x = 0; x < results.length; x++) { if (results[x].hash === sh2) { rIdx = x; break; } }
+    if (rIdx >= 0 && $('candidateModal').classList.contains('open')) openCandidate(rIdx);
+  } else if (act === 'rescan') {
+    ev.stopPropagation();
+    rescanOne(t.getAttribute('data-hash'));
+  } else if (act === 'outreach') {
+    openOutreach();
+  } else if (act === 'or-toggle') {
+    ev.stopPropagation();
+  } else if (act === 'or-copy') {
+    ev.stopPropagation();
+    var msg = decodeURIComponent(t.getAttribute('data-msg'));
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(function () { toast('Message copied', 'ok'); });
+  } else if (act === 'or-contacted') {
+    markSelectedContacted();
+  } else if (act === 'or-copyall') {
+    copyAllMessages();
+  } else if (act === 'or-csv') {
+    exportOutreachCSV();
+  } else if (act === 'or-vapi') {
+    queueVapiCalls();
+  }
+}
+
+// ─── WIRE UP + INIT ──────────────────────────────────────
+function init() {
+  // static buttons
+  $('btnEngine').addEventListener('click', openEnginePanel);
+  $('btnSync').addEventListener('click', function () { $('syncPanel').classList.add('open'); });
+  $('btnOutreach').addEventListener('click', openOutreach);
+  $('btnOutreachClose').addEventListener('click', closeOutreach);
+  $('outreachPanel').addEventListener('click', function (ev) { if (ev.target === $('outreachPanel')) closeOutreach(); });
+  $('orTemplate').addEventListener('input', renderOutreach);
+  $('orIncludeInterview').addEventListener('change', renderOutreach);
+  loadVapiCfg();
+  loadGroqCfg();
+  $('btnSyncClose').addEventListener('click', closeSyncPanel);
+  $('btnSyncSave').addEventListener('click', function () {
+    sbUrl = $('sbUrlInput').value.trim().replace(/\/+$/, '');
+    sbKey = $('sbKeyInput').value.trim();
+    myName = $('sbNameInput').value.trim();
+    saveSyncCfg();
+    if (sbConfigured()) { sbTest().then(function (ok) { if (ok) sbFetchAll().then(function(){ renderHome(); }); }); }
+    closeSyncPanel();
+  });
+  $('btnSyncTest').addEventListener('click', async function () {
+    sbUrl = $('sbUrlInput').value.trim().replace(/\/+$/, '');
+    sbKey = $('sbKeyInput').value.trim();
+    var st = $('sbTestStatus');
+    st.textContent = 'Testing\u2026';
+    var ok = await sbTest();
+    st.innerHTML = ok
+      ? '<span style="color:var(--green)">\u2705 Connected \u2014 team database reachable</span>'
+      : '<span style="color:var(--red)">\u26A0 Failed \u2014 check URL, key, and that the candidates table exists</span>';
+  });
+  $('btnCopySql').addEventListener('click', function () {
+    var sql = $('sqlBlock').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(sql).then(function(){ toast('SQL copied', 'ok'); });
+    } else { toast('Select and copy the SQL manually', 'warn'); }
+  });
+  $('syncPanel').addEventListener('click', function (ev) { if (ev.target === $('syncPanel')) closeSyncPanel(); });
+  $('btnEngineClose').addEventListener('click', closeEnginePanel);
+  $('btnEngineSave').addEventListener('click', closeEnginePanel);
+  $('engOptOllama').addEventListener('click', function () { selectEngine('ollama'); });
+  $('engOptGroq').addEventListener('click', function () { selectEngine('groq'); });
+  $('btnTestOllama').addEventListener('click', checkOllama);
+  $('btnTestGroq').addEventListener('click', groqTestKey);
+  $('groqModel').addEventListener('change', function (ev) { groqModel = ev.target.value; saveGroqCfg(); updateEngineStatus(); });
+  $('btnRescanAll').addEventListener('click', rescanAllVisible);
+  $('syncToggle').addEventListener('change', function (ev) { toggleSync(ev.target.checked); });
+  $('enginePanel').addEventListener('click', function (ev) { if (ev.target === $('enginePanel')) closeEnginePanel(); });
+
+  $('btnScreen').addEventListener('click', runScreening);
+  $('btnClearFiles').addEventListener('click', clearUploads);
+  $('btnScreenMore').addEventListener('click', goHome);
+  $('btnClearHistory').addEventListener('click', clearHistory);
+  $('btnExport').addEventListener('click', exportCSV);
+  $('btnViewAll').addEventListener('click', function () { activeFilter = 'ALL'; goResults(); });
+
+  $('modalClose').addEventListener('click', closeCandidate);
+  $('candidateModal').addEventListener('click', function (ev) { if (ev.target === $('candidateModal')) closeCandidate(); });
+
+  $('sortSel').addEventListener('change', renderResults);
+  $('searchBox').addEventListener('input', function (ev) { searchTerm = ev.target.value.trim(); renderResults(); });
+
+  // upload zone
+  var dz = $('dropZone');
+  dz.addEventListener('click', function () { $('fileInput').click(); });
+  dz.addEventListener('dragover', function (ev) { ev.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('drag'); });
+  dz.addEventListener('drop', function (ev) {
+    ev.preventDefault();
+    dz.classList.remove('drag');
+    handleFileSelection(ev.dataTransfer.files);
+  });
+  $('fileInput').addEventListener('change', function (ev) {
+    handleFileSelection(ev.target.files);
+    ev.target.value = '';
+  });
+
+  // delegation for all dynamic content
+  document.addEventListener('click', onGlobalClick);
+
+  // Guard against losing an in-flight batch
+  window.addEventListener('beforeunload', function (ev) {
+    if (batchRunning) {
+      ev.preventDefault();
+      ev.returnValue = 'Screening is still running. Completed resumes are saved, but the rest will stop.';
+      return ev.returnValue;
+    }
+  });
+
+  // keyboard: ESC closes modals
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') { closeCandidate(); closeEnginePanel(); }
+  });
+
+  // boot
+  loadData();
+  loadSyncCfg();
+  if ($('sbUrlInput')) { $('sbUrlInput').value = sbUrl; $('sbKeyInput').value = sbKey; $('sbNameInput').value = myName; }
+  selectJob(-1);
+  renderUploadList();
+  updateScreenButton();
+  renderHome();
+  updateEngineStatus();
+  setTimeout(checkOllama, 600);
+  if (sbConfigured()) { syncState = 'off'; updateSyncStatus(); sbTest().then(function (ok) { if (ok) sbFetchAll().then(function(){ renderHome(); }); }); }
+  if (results.length) toast(results.length + ' candidates in history \u2014 tap a stat to view', 'ok');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
