@@ -296,6 +296,7 @@ button{font-family:var(--font)}
 .note-add{display:flex;gap:8px;margin-top:9px;align-items:center}
 
 /* ── evidence check ── */
+.ev-req span{margin-left:4px}
 .ev-row{display:flex;gap:9px;padding:8px 11px;background:var(--surf);border-radius:9px;margin-bottom:6px;align-items:flex-start}
 .ev-mark{font-size:14px;font-weight:900;flex-shrink:0;line-height:1.4}
 .ev-body{flex:1;min-width:0}
@@ -974,7 +975,38 @@ function loadData() {
     results = d.results || [];
     notes = d.notes || {};
     stages = d.stages || {};
+    migrateStoredScores();
   } catch (e) { hist = {}; results = []; }
+}
+
+// Results saved by an OLDER version of the scoring logic keep their old
+// numbers forever unless re-normalized \u2014 opening the app again doesn't
+// rescore anything automatically. This runs the CURRENT normalizeResult()
+// over every already-screened candidate on load, so a scoring-logic fix
+// applies retroactively to your whole history without manually rescanning
+// each person. Safe to run repeatedly: it's deterministic from the same
+// evidenceCheck/roleScores the model already returned.
+function migrateStoredScores() {
+  var changed = false;
+  for (var i = 0; i < results.length; i++) {
+    var d = results[i].scoreData;
+    if (!d || !d.evidenceCheck) continue;   // nothing to re-derive from, leave as-is
+    var isAll = !!d.isScanAll;
+    var job = null;
+    if (!isAll) { for (var j = 0; j < JOBS.length; j++) { if (JOBS[j].id === d.jobId) { job = JOBS[j]; break; } } }
+    var before = JSON.stringify({ score: d.overallScore, rec: d.recommendation, roles: (d.roleScores || []).map(function (r) { return r.score; }) });
+    var fresh = normalizeResult(JSON.parse(JSON.stringify(d)), isAll, job || JOBS[0]);
+    var after = JSON.stringify({ score: fresh.overallScore, rec: fresh.recommendation, roles: (fresh.roleScores || []).map(function (r) { return r.score; }) });
+    if (before !== after) {
+      results[i].scoreData = fresh;
+      hist[results[i].hash] = fresh;
+      changed = true;
+    }
+  }
+  if (changed) {
+    saveData();
+    toast('Some previously screened candidates were rescored with the latest logic', 'ok');
+  }
 }
 
 // ─── HASHING (dup detection) ─────────────────────────────
@@ -1163,7 +1195,9 @@ function scoringRubric() {
     + '3+ jobs under 12mo unexplained=-10 to -15. Desk-only or director/VP for $18-22/hr=max 40. '
     + 'Fresh grad needs real physical work (warehouse/kitchen/retail/construction/military/trades); coursework does not count. '
     + 'If you would hesitate to interview today, it is NOT a STRONG_HIRE.\n'
-    + 'For each requirement output MET/NOT MET with an exact resume quote. No quote = NOT MET. Score must follow the evidence.\n';
+    + 'THINK LIKE A PERSON, NOT A KEYWORD MATCHER: an experienced recruiter reads the whole picture \u2014 how recent, how long, how directly relevant \u2014 not just whether a phrase appears. '
+    + '"Trained new hires" is weaker leadership evidence than "managed a team of 8"; both exist, but only one is strong. Judge quality, not just presence.\n'
+    + 'For each requirement output STRONG (clearly and directly proven), PARTIAL (related but indirect, old, or thin), or NONE (no real evidence), with an exact resume quote if any exists. Score must follow your own honest judgment of that evidence, the way a real hiring manager would read it.\n';
 }
 
 function buildSinglePrompt(job, text) {
@@ -1179,7 +1213,7 @@ function buildSinglePrompt(job, text) {
     + 'AGE: HS grad->born=gradYr-18; college->gradYr-22; earliest job only->jobYr-20. Show math. No dates->0/LOW.\n'
     + 'RESUME:\n' + text + '\n'
     + 'JSON only: {"candidateName":"","phone":"","email":"",'
-    + '"evidenceCheck":[{"requirement":"","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"}],'
+    + '"evidenceCheck":[{"requirement":"","verdict":"STRONG|PARTIAL|NONE","evidence":"quote or NONE FOUND"}],'
     + '"overallScore":0,' + sf + ',"recommendation":"STRONG_HIRE|INTERVIEW|SKIP",'
     + '"estimatedAge":0,"ageCalculation":"","ageConfidence":"HIGH|MEDIUM|LOW",'
     + '"hasCareerGaps":false,"gapVerdict":"FORGIVEN|PENALIZED|NO_GAPS","gapPenalty":0,"gapForgivenessReason":null,'
@@ -1200,14 +1234,17 @@ function buildScanAllPrompt(text) {
     + '5 Hardware Technician $20-25: needs 2+yr enterprise IT hardware (server/storage/network). Help desk only = max 50.\n'
     + scoringRubric()
     + 'DIFFERENTIATE: a real person fits 1-2 roles, not all 5. No IT evidence -> roles 1&5 under 45. '
+    + 'CRITICAL: IT hardware evidence ONLY matters for roles 1 and 5 \u2014 never let it lower scores for roles 2, 3, 4. '
+    + 'Supervisory evidence ONLY matters for role 4 \u2014 never let it lower scores for roles 1, 2, 3, 5. '
+    + 'If physical/warehouse work is MET, roles 2 and 3 should typically score 65+ regardless of IT hardware or leadership evidence. '
     + 'Never supervised -> role 4 under 45. Similar scores across all 5 is wrong.\n'
     + 'bestFitScore = highest role score. qualifiesForMultiple only if 2+ roles >=65.\n'
     + 'AGE: HS->gradYr-18; college->gradYr-22; earliest job only->jobYr-20. Show math.\n'
     + 'RESUME:\n' + text + '\n'
     + 'JSON only: {"candidateName":"","phone":"","email":"",'
-    + '"evidenceCheck":[{"requirement":"physical/warehouse work","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"},'
-    + '{"requirement":"IT hardware hands-on","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"},'
-    + '{"requirement":"supervisory/leadership","verdict":"MET|NOT MET","evidence":"quote or NONE FOUND"}],'
+    + '"evidenceCheck":[{"requirement":"physical/warehouse work","verdict":"STRONG|PARTIAL|NONE","evidence":"quote or NONE FOUND"},'
+    + '{"requirement":"IT hardware hands-on","verdict":"STRONG|PARTIAL|NONE","evidence":"quote or NONE FOUND"},'
+    + '{"requirement":"supervisory/leadership","verdict":"STRONG|PARTIAL|NONE","evidence":"quote or NONE FOUND"}],'
     + '"estimatedAge":0,"ageCalculation":"","ageConfidence":"HIGH|MEDIUM|LOW",'
     + '"yearsExperience":0,"education":"","hasCareerGaps":false,"workHistoryTags":[],'
     + '"bestFitRole":"","bestFitScore":0,"qualifiesForMultiple":false,"multipleRoleMatches":[],'
@@ -1838,21 +1875,27 @@ async function runScreening() {
 }
 
 function normalizeResult(d, isAll, job) {
-  // Evidence-based guards applied in CODE so a lenient model cannot inflate past them.
+  // Reads the model's own graded judgment rather than a binary yes/no,
+  // the way a person weighs "strong proof" vs "some relevant signal" vs "nothing".
   var ev = d.evidenceCheck || [];
-  function evMet(keyword) {
+  function evGrade(keyword) {
     for (var i = 0; i < ev.length; i++) {
       var req = (ev[i].requirement || '').toLowerCase();
-      if (req.indexOf(keyword) >= 0) return (ev[i].verdict || '').toUpperCase().indexOf('NOT') < 0;
+      if (req.indexOf(keyword) >= 0) {
+        var v = (ev[i].verdict || '').toUpperCase();
+        if (v.indexOf('STRONG') >= 0 || v.indexOf('MET') >= 0 && v.indexOf('NOT') < 0 && v.indexOf('PARTIAL') < 0) return 'STRONG';
+        if (v.indexOf('PARTIAL') >= 0) return 'PARTIAL';
+        return 'NONE';
+      }
     }
-    return null; // unknown
+    return null; // this dimension wasn't addressed
   }
 
   if (isAll) {
     d.isScanAll = true; d.jobId = 'scanall'; d.jobTitle = 'All Roles';
-    var physOk = evMet('physical');
-    var itOk = evMet('it hardware');
-    var leadOk = evMet('supervis');
+    var physG = evGrade('physical');
+    var itG = evGrade('it hardware');
+    var leadG = evGrade('supervis');
 
     if (d.roleScores && d.roleScores.length) {
       // Check flatness on the model's RAW output, before our caps spread them apart
@@ -1860,24 +1903,65 @@ function normalizeResult(d, isAll, job) {
       var rawMax = Math.max.apply(null, rawScores), rawMin = Math.min.apply(null, rawScores);
       var wasFlat = (rawMax - rawMin) <= 8 && rawMax >= 60;
 
+      // Detect: did the model apply an irrelevant dimension (e.g. IT hardware)
+      // as a blanket penalty across roles that don't need it? Roles 2 & 3 don't
+      // require IT hardware or leadership at all, so if physical work IS proven,
+      // an unexplained low score there is a model error, not a real weakness.
+      var physWarehouseTied = false;
+      if (physG === 'STRONG') {
+        var lcScore = 0, whScore = 0;
+        d.roleScores.forEach(function (rs) {
+          if (rs.jobId === 'lifecycle') lcScore = Math.round(rs.score || 0);
+          if (rs.jobId === 'warehouse') whScore = Math.round(rs.score || 0);
+        });
+        physWarehouseTied = Math.abs(lcScore - whScore) <= 5 && lcScore < 60;
+      }
+
+      var isWhTrack = function (id) { return id === 'itad' || id === 'lifecycle' || id === 'warehouse' || id === 'teamlead'; };
+
       d.roleScores.forEach(function (rs) {
         rs.score = Math.max(0, Math.min(100, Math.round(rs.score || 0)));
-        // Hard caps from evidence findings
-        if (physOk === false && (rs.jobId === 'itad' || rs.jobId === 'lifecycle' || rs.jobId === 'warehouse' || rs.jobId === 'teamlead')) {
-          rs.score = Math.min(rs.score, 45);
+
+        // Ceilings, graduated like a person's confidence rather than a switch:
+        //   NONE    = clear evidence gap -> hard ceiling
+        //   PARTIAL = some relevant but indirect/thin signal -> soft ceiling, leaves room to judge
+        //   STRONG  = fully proven -> no ceiling from this dimension
+        if (physG === 'NONE' && isWhTrack(rs.jobId)) rs.score = Math.min(rs.score, 42);
+        else if (physG === 'PARTIAL' && isWhTrack(rs.jobId)) rs.score = Math.min(rs.score, 68);
+
+        if (itG === 'NONE' && (rs.jobId === 'hardware' || rs.jobId === 'itad')) {
+          rs.score = Math.min(rs.score, rs.jobId === 'hardware' ? 38 : 48);
+        } else if (itG === 'PARTIAL' && (rs.jobId === 'hardware' || rs.jobId === 'itad')) {
+          rs.score = Math.min(rs.score, rs.jobId === 'hardware' ? 68 : 72);
         }
-        if (itOk === false && (rs.jobId === 'hardware' || rs.jobId === 'itad')) {
-          rs.score = Math.min(rs.score, rs.jobId === 'hardware' ? 40 : 50);
+
+        if (leadG === 'NONE' && rs.jobId === 'teamlead') rs.score = Math.min(rs.score, 42);
+        else if (leadG === 'PARTIAL' && rs.jobId === 'teamlead') rs.score = Math.min(rs.score, 68);
+
+        // Floor: a role's core requirement is STRONGLY proven, so an
+        // unrelated dimension (that role doesn't even need) must not sink it \u2014
+        // this is the exact mistake a rigid checklist makes and a real
+        // recruiter would not.
+        if (physG === 'STRONG' && (rs.jobId === 'lifecycle' || rs.jobId === 'warehouse') && rs.score < 62) {
+          rs.score = 66; rs._floorApplied = true;
         }
-        if (leadOk === false && rs.jobId === 'teamlead') {
-          rs.score = Math.min(rs.score, 45);
+        if (physG === 'STRONG' && leadG === 'STRONG' && rs.jobId === 'teamlead' && rs.score < 62) {
+          rs.score = 66; rs._floorApplied = true;
         }
+        if (physG === 'PARTIAL' && (rs.jobId === 'lifecycle' || rs.jobId === 'warehouse') && rs.score < 50) {
+          rs.score = 52; rs._floorApplied = true;   // thin evidence still deserves a human look, not an auto-skip
+        }
+
         rs.recommendation = rs.score >= 80 ? 'STRONG_HIRE' : rs.score >= 65 ? 'INTERVIEW' : 'SKIP';
       });
 
-      if (wasFlat) {
+      if (wasFlat || physWarehouseTied) {
         d.concerns = d.concerns || [];
-        d.concerns.push('AI scored all roles similarly \u2014 verify role fit manually');
+        d.concerns.push('Score inconsistency corrected \u2014 an unrelated missing skill was dragging down roles that don\u2019t require it');
+      }
+      if (d.roleScores.some(function (rs) { return rs._floorApplied; })) {
+        d.positiveSignals = d.positiveSignals || [];
+        d.positiveSignals.push('Verified physical/warehouse experience supports this role independent of other requirements');
       }
 
       var best = d.roleScores.reduce(function (a, b) { return b.score > a.score ? b : a; });
@@ -1913,8 +1997,13 @@ function normalizeResult(d, isAll, job) {
     }
 
     // Any must-have marked NOT MET blocks a STRONG_HIRE
-    var anyUnmet = ev.some(function (e) { return (e.verdict || '').toUpperCase().indexOf('NOT') >= 0; });
-    if (anyUnmet && d.overallScore >= 80) d.overallScore = 79;
+    var anyNone = ev.some(function (e) { var v = (e.verdict || '').toUpperCase(); return v.indexOf('NONE') >= 0 || (v.indexOf('NOT') >= 0 && v.indexOf('PARTIAL') < 0); });
+    var anyPartial = ev.some(function (e) { return (e.verdict || '').toUpperCase().indexOf('PARTIAL') >= 0; });
+    // A clear evidence gap should stop a STRONG_HIRE outright; a partial/thin
+    // signal is a real weakness worth noting but not an automatic downgrade \u2014
+    // that's the difference between a rule and a judgment call.
+    if (anyNone && d.overallScore >= 80) d.overallScore = 76;
+    else if (anyPartial && d.overallScore >= 80) d.overallScore = 79;
 
     d.recommendation = d.overallScore >= 80 ? 'STRONG_HIRE' : d.overallScore >= 65 ? 'INTERVIEW' : 'SKIP';
   }
@@ -2118,11 +2207,14 @@ function buildCard(r, cardIdx) {
     html += '<div class="m-sec"><div class="m-lbl">\u2713 Requirement verification</div>';
     for (var e2 = 0; e2 < ev.length; e2++) {
       var item = ev[e2];
-      var met = (item.verdict || '').toUpperCase().indexOf('NOT') < 0;
-      var ec = met ? 'var(--green)' : 'var(--red)';
+      var v = (item.verdict || '').toUpperCase();
+      var grade = v.indexOf('STRONG') >= 0 || (v.indexOf('MET') >= 0 && v.indexOf('NOT') < 0 && v.indexOf('PARTIAL') < 0) ? 'STRONG'
+        : v.indexOf('PARTIAL') >= 0 ? 'PARTIAL' : 'NONE';
+      var ec = grade === 'STRONG' ? 'var(--green)' : grade === 'PARTIAL' ? 'var(--yellow)' : 'var(--red)';
+      var mark = grade === 'STRONG' ? '\u2713' : grade === 'PARTIAL' ? '\u25D0' : '\u2715';
       html += '<div class="ev-row">';
-      html += '<span class="ev-mark" style="color:' + ec + '">' + (met ? '\u2713' : '\u2715') + '</span>';
-      html += '<div class="ev-body"><div class="ev-req">' + esc(item.requirement || '') + '</div>';
+      html += '<span class="ev-mark" style="color:' + ec + '">' + mark + '</span>';
+      html += '<div class="ev-body"><div class="ev-req">' + esc(item.requirement || '') + (grade === 'PARTIAL' ? ' <span style="color:var(--yellow);font-weight:700;font-size:10px">(partial)</span>' : '') + '</div>';
       html += '<div class="ev-quote">' + (item.evidence && item.evidence !== 'NONE FOUND'
         ? '\u201C' + esc(item.evidence) + '\u201D'
         : '<span style="color:var(--red)">No supporting evidence in resume</span>') + '</div></div></div>';
@@ -2230,11 +2322,14 @@ function openCandidate(ri) {
     html += '<div class="m-sec"><div class="m-lbl">\u2713 Requirement verification</div>';
     for (var e2 = 0; e2 < ev.length; e2++) {
       var item = ev[e2];
-      var met = (item.verdict || '').toUpperCase().indexOf('NOT') < 0;
-      var ec = met ? 'var(--green)' : 'var(--red)';
+      var v = (item.verdict || '').toUpperCase();
+      var grade = v.indexOf('STRONG') >= 0 || (v.indexOf('MET') >= 0 && v.indexOf('NOT') < 0 && v.indexOf('PARTIAL') < 0) ? 'STRONG'
+        : v.indexOf('PARTIAL') >= 0 ? 'PARTIAL' : 'NONE';
+      var ec = grade === 'STRONG' ? 'var(--green)' : grade === 'PARTIAL' ? 'var(--yellow)' : 'var(--red)';
+      var mark = grade === 'STRONG' ? '\u2713' : grade === 'PARTIAL' ? '\u25D0' : '\u2715';
       html += '<div class="ev-row">';
-      html += '<span class="ev-mark" style="color:' + ec + '">' + (met ? '\u2713' : '\u2715') + '</span>';
-      html += '<div class="ev-body"><div class="ev-req">' + esc(item.requirement || '') + '</div>';
+      html += '<span class="ev-mark" style="color:' + ec + '">' + mark + '</span>';
+      html += '<div class="ev-body"><div class="ev-req">' + esc(item.requirement || '') + (grade === 'PARTIAL' ? ' <span style="color:var(--yellow);font-weight:700;font-size:10px">(partial)</span>' : '') + '</div>';
       html += '<div class="ev-quote">' + (item.evidence && item.evidence !== 'NONE FOUND'
         ? '\u201C' + esc(item.evidence) + '\u201D'
         : '<span style="color:var(--red)">No supporting evidence in resume</span>') + '</div></div></div>';
