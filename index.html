@@ -369,6 +369,7 @@ button{font-family:var(--font)}
     <div class="hdr-r">
       <div class="pill" id="syncPill" style="display:none"><span class="dot" id="syncDot"></span><span id="syncLbl">Sync</span></div>
       <div class="pill"><span class="dot dg" id="statusDot"></span><span id="statusLbl">Groq · llama-4-scout</span></div>
+      <button class="eng-btn" id="btnLearn">🧠 Learning</button>
       <button class="eng-btn" id="btnSync">☁ Team Sync</button>
       <button class="eng-btn" id="btnEngine">⚙ Engine</button>
     </div>
@@ -563,7 +564,16 @@ create policy "team_all" on candidates
 alter table candidates
   add column if not exists notes jsonb default '[]';
 alter table candidates
-  add column if not exists stage text default 'NEW';</pre>
+  add column if not exists stage text default 'NEW';
+create table if not exists hiring_overrides (
+  hash text primary key,
+  name text, role text, ai_score int, ai_rec text,
+  action text, tags jsonb, signals jsonb, years int,
+  decided_by text, created_at timestamptz default now()
+);
+alter table hiring_overrides enable row level security;
+create policy "ov_all" on hiring_overrides
+  for all using (true) with check (true);</pre>
       <button class="btn btn-g btn-sm" id="btnCopySql" style="position:absolute;top:8px;right:8px">Copy</button>
     </div>
 
@@ -582,6 +592,39 @@ alter table candidates
     <div class="e-help" style="margin-top:12px">
       <b>Notes:</b> the anon key is safe-ish for a small internal team but anyone holding it can read/write the table.
       For wider use, tighten the RLS policy or add Supabase Auth later.
+    </div>
+  </div>
+</div>
+
+<!-- LEARNING PANEL -->
+<div class="epanel" id="learnPanel">
+  <div class="ebox" style="max-width:560px">
+    <div class="e-head">
+      <div class="e-title">🧠 Hiring intelligence — learns from your decisions</div>
+      <button class="e-x" id="btnLearnClose">✕</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--surf);border:1px solid var(--line);border-radius:10px;margin-bottom:16px">
+      <div>
+        <div style="font-size:13px;font-weight:800">Adapt scoring to my choices</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">When you shortlist a skipped candidate or reject a top one, future scoring learns from it</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="learnToggle" checked><span class="slider"></span></label>
+    </div>
+
+    <div class="e-lbl">What the app has learned about your hiring taste</div>
+    <textarea class="or-tpl" id="prefText" style="min-height:120px" placeholder="Nothing learned yet. As you shortlist candidates the AI skipped — or reject ones it rated highly — a summary of your preferences appears here and shapes future scoring. You can also edit this directly to teach it manually."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn btn-p btn-sm" id="btnPrefSave">Save my edits</button>
+      <button class="btn btn-g btn-sm" id="btnPrefAuto">Rebuild from my decisions</button>
+      <button class="btn btn-g btn-sm" id="btnPrefReset" style="margin-left:auto">Reset learning</button>
+    </div>
+
+    <div class="e-lbl" style="margin-top:18px">Decisions the app has learned from (<span id="ovCount">0</span>)</div>
+    <div id="ovList" style="max-height:200px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:4px 10px;background:var(--card)"></div>
+
+    <div class="e-help" style="margin-top:14px">
+      <b>How this works:</b> this is transparent feedback-learning, not a black box. Every override you make is listed above, and the summary you can read and edit is exactly what gets sent to the AI. With Team Sync on, your team\u2019s decisions combine into one shared hiring intelligence.
     </div>
   </div>
 </div>
@@ -693,6 +736,15 @@ var STAGES = ['NEW', 'CONTACTED', 'INTERVIEWING', 'OFFER', 'HIRED', 'REJECTED'];
 var STAGE_COLORS = { NEW: 'var(--muted)', CONTACTED: 'var(--blue)', INTERVIEWING: 'var(--purple)', OFFER: 'var(--yellow)', HIRED: 'var(--green)', REJECTED: 'var(--red)' };
 var stageFilter = 'ALL';
 
+// ─── HIRING PREFERENCE LEARNING ──────────────────────────
+// Captures where the hiring manager overrode the AI, derives a plain-language
+// summary of their taste, and feeds it back into future scoring prompts.
+// This is feedback-driven adaptation, not ML: fully inspectable and editable.
+var overrides = [];           // [{hash,name,role,aiScore,aiRec,action,signals,tags,ts,by}]
+var prefProfile = '';         // human-readable learned summary, editable
+var prefEnabled = true;       // master switch
+var PREF_KEY = 'hustleradar_prefs_v1';
+
 // ─── SUPABASE TEAM SYNC ──────────────────────────────────
 var sbUrl = '';               // e.g. https://xxxx.supabase.co
 var sbKey = '';               // anon public key
@@ -769,6 +821,7 @@ async function sbFetchAll() {
     syncState = 'ok'; updateSyncStatus();
     saveData();
     if (added > 0) toast('Synced ' + added + ' candidate' + (added !== 1 ? 's' : '') + ' from team', 'ok');
+    sbFetchOverrides();
   } catch (e) { syncState = 'err'; updateSyncStatus(); }
 }
 
@@ -822,12 +875,99 @@ async function sbPushStage(hash) {
 }
 
 function setStage(hash, stage) {
+  var prev = stages[hash] || 'NEW';
   stages[hash] = stage;
+  captureOverride(hash, stage, prev);
   saveData();
   sbPushStage(hash);
   renderResults();
   renderHome();
 }
+
+// Records a labeled disagreement between the human and the AI. Only meaningful
+// overrides are captured: shortlisting a SKIP, or rejecting a HIRE/INTERVIEW.
+function captureOverride(hash, stage, prev) {
+  var r = null;
+  for (var i = 0; i < results.length; i++) { if (results[i].hash === hash) { r = results[i]; break; } }
+  if (!r) return;
+  var d = r.scoreData;
+  var aiRec = d.recommendation || 'SKIP';
+  var action = null;
+
+  // Human liked someone the AI dismissed
+  if ((stage === 'INTERVIEWING' || stage === 'OFFER' || stage === 'HIRED') && aiRec === 'SKIP') action = 'LIKED_SKIP';
+  // Human hired/advanced someone — positive signal even if AI agreed
+  else if (stage === 'HIRED') action = 'HIRED';
+  // Human rejected someone the AI rated highly
+  else if (stage === 'REJECTED' && (aiRec === 'STRONG_HIRE' || aiRec === 'INTERVIEW')) action = 'REJECTED_GOOD';
+
+  if (!action) return;
+
+  var role = d.isScanAll ? (d.bestFitRole || 'Unknown') : (d.jobTitle || 'Unknown');
+  // strip any prior override for this hash so re-decisions replace, not stack
+  overrides = overrides.filter(function (o) { return o.hash !== hash; });
+  overrides.push({
+    hash: hash,
+    name: d.candidateName || r.name.replace('.pdf', ''),
+    role: role,
+    aiScore: d.overallScore || 0,
+    aiRec: aiRec,
+    action: action,
+    tags: (d.workHistoryTags || []).slice(0, 6),
+    signals: (action === 'REJECTED_GOOD' ? (d.concerns || []) : (d.positiveSignals || [])).slice(0, 4),
+    years: d.yearsExperience || 0,
+    ts: Date.now(),
+    by: myName || 'Me'
+  });
+  if (overrides.length > 100) overrides = overrides.slice(-100);   // keep it bounded
+  rebuildPrefProfile();
+  sbPushOverride(overrides[overrides.length - 1]);
+}
+
+// Derives a plain-language preference summary from accumulated overrides.
+// Readable and editable — the user can see exactly what the app "learned".
+function rebuildPrefProfile() {
+  if (!overrides.length) { if (!prefManualEdit) prefProfile = ''; return; }
+  if (prefManualEdit) return;   // don't clobber a hand-edited profile
+
+  var liked = overrides.filter(function (o) { return o.action === 'LIKED_SKIP' || o.action === 'HIRED'; });
+  var rejected = overrides.filter(function (o) { return o.action === 'REJECTED_GOOD'; });
+
+  function topItems(arr, key) {
+    var freq = {};
+    arr.forEach(function (o) {
+      (o[key] || []).forEach(function (t) {
+        var k = String(t).toLowerCase().trim();
+        if (k.length > 2) freq[k] = (freq[k] || 0) + 1;
+      });
+    });
+    return Object.keys(freq).sort(function (a, b) { return freq[b] - freq[a]; }).slice(0, 6);
+  }
+
+  var likedTags = topItems(liked, 'tags');
+  var likedSignals = topItems(liked, 'signals');
+  var rejTags = topItems(rejected, 'tags');
+
+  var parts = [];
+  if (liked.length) {
+    var lp = 'This hiring manager has shortlisted or hired ' + liked.length + ' candidate(s) the AI initially rated low or skipped';
+    if (likedTags.length) lp += ', often with backgrounds in: ' + likedTags.join(', ');
+    if (likedSignals.length) lp += '. They value signals like: ' + likedSignals.slice(0, 4).join('; ');
+    parts.push(lp + '.');
+  }
+  if (rejected.length) {
+    var rp = 'They have rejected ' + rejected.length + ' candidate(s) the AI rated highly';
+    if (rejTags.length) rp += ', frequently with: ' + rejTags.join(', ');
+    parts.push(rp + '. Be more skeptical of these profiles.');
+  }
+  var likedRoles = {};
+  liked.forEach(function (o) { likedRoles[o.role] = (likedRoles[o.role] || 0) + 1; });
+  var roleList = Object.keys(likedRoles).sort(function (a, b) { return likedRoles[b] - likedRoles[a]; });
+  if (roleList.length) parts.push('Most of their positive overrides are for: ' + roleList.slice(0, 3).join(', ') + '.');
+
+  prefProfile = parts.join(' ');
+}
+var prefManualEdit = false;
 
 function addNote(hash) {
   var inp = $('noteInput');
@@ -856,6 +996,44 @@ function renderNotes(hash) {
     html += '<div class="note-item"><div class="note-head"><span class="note-by">' + esc(n.by || 'Unknown') + '</span><span class="note-ts">' + whenStr + '</span></div><div class="note-txt">' + esc(n.text) + '</div></div>';
   }
   box.innerHTML = html;
+}
+
+async function sbPushOverride(ov) {
+  if (!sbConfigured() || !ov) return;
+  try {
+    await fetch(sbUrl + '/rest/v1/hiring_overrides?on_conflict=hash', {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify([{
+        hash: ov.hash, name: ov.name, role: ov.role, ai_score: ov.aiScore,
+        ai_rec: ov.aiRec, action: ov.action, tags: ov.tags, signals: ov.signals,
+        years: ov.years, decided_by: ov.by
+      }])
+    });
+  } catch (e) { }
+}
+
+async function sbFetchOverrides() {
+  if (!sbConfigured()) return;
+  try {
+    var res = await fetch(sbUrl + '/rest/v1/hiring_overrides?select=*&order=created_at.desc&limit=200', { headers: sbHeaders() });
+    if (!res.ok) return;
+    var rows = await res.json();
+    var seen = {};
+    overrides.forEach(function (o) { seen[o.hash] = true; });
+    var added = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (!row.hash || seen[row.hash]) continue;
+      overrides.push({
+        hash: row.hash, name: row.name, role: row.role, aiScore: row.ai_score,
+        aiRec: row.ai_rec, action: row.action, tags: row.tags || [], signals: row.signals || [],
+        years: row.years || 0, ts: row.created_at ? Date.parse(row.created_at) : Date.now(), by: row.decided_by || 'Team'
+      });
+      seen[row.hash] = true; added++;
+    }
+    if (added > 0) { rebuildPrefProfile(); saveData(); }
+  } catch (e) { }
 }
 
 function updateSyncStatus() {
@@ -964,6 +1142,7 @@ function saveData() {
       return { name: r.name, hash: r.hash, sizeKB: r.sizeKB, scoreData: r.scoreData, ts: r.ts, text: r.text, by: r.by };
     });
     localStorage.setItem(STORE_KEY, JSON.stringify({ history: hist, results: safe, notes: notes, stages: stages }));
+    localStorage.setItem(PREF_KEY, JSON.stringify({ overrides: overrides, profile: prefProfile, on: prefEnabled }));
   } catch (e) { /* storage full or blocked - non fatal */ }
 }
 function loadData() {
@@ -975,6 +1154,12 @@ function loadData() {
     results = d.results || [];
     notes = d.notes || {};
     stages = d.stages || {};
+    try {
+      var pr = JSON.parse(localStorage.getItem(PREF_KEY) || '{}');
+      overrides = pr.overrides || [];
+      prefProfile = pr.profile || '';
+      prefEnabled = pr.on !== false;
+    } catch (ep) { overrides = []; prefProfile = ''; prefEnabled = true; }
     migrateStoredScores();
   } catch (e) { hist = {}; results = []; }
 }
@@ -1183,8 +1368,18 @@ function buildSystemPrompt(job) {
     + 'Skills listed but not shown in a job entry are UNVERIFIED and score near zero. '
     + 'Most applicants are mediocre: aim most scores 30-60, few 65-79, rare 80+. '
     + 'Uncertainty means score DOWN. Return ONLY valid JSON, no markdown.';
+  base += prefPromptBlock();
   if (!job) return base + ' A candidate truly fits at most 1-2 of the 5 roles; score the others low.';
   return base + ' Role: ' + job.title + '. Gaps: ' + job.gap;
+}
+
+// Injects the learned hiring-manager preferences so the AI adapts to the
+// human's demonstrated taste. Kept short to protect the token budget.
+function prefPromptBlock() {
+  if (!prefEnabled || !prefProfile) return '';
+  var p = prefProfile.slice(0, 600);
+  return ' LEARNED PREFERENCES FROM THIS HIRING MANAGER\u2019S PAST DECISIONS (weight these, they reflect real hiring outcomes this model got wrong before): '
+    + p + ' Adjust borderline scores toward these demonstrated preferences, but never fabricate evidence that is not in the resume.';
 }
 
 function scoringRubric() {
@@ -2487,6 +2682,31 @@ function toggleSync(on) {
     toast('Team sync paused \u2014 working offline, nothing sent to Supabase', 'warn');
   }
 }
+function openLearnPanel() { $('learnPanel').classList.add('open'); renderLearnPanel(); }
+function renderLearnPanel() {
+  var tg = $('learnToggle'); if (tg) tg.checked = prefEnabled;
+  var pt = $('prefText'); if (pt) pt.value = prefProfile;
+  var cnt = $('ovCount'); if (cnt) cnt.textContent = overrides.length;
+  var box = $('ovList');
+  if (!box) return;
+  if (!overrides.length) {
+    box.innerHTML = '<div style="font-size:11.5px;color:var(--dim);padding:12px 0;text-align:center">No overrides yet. Shortlist a skipped candidate or reject a top-rated one and it appears here.</div>';
+    return;
+  }
+  var labels = { LIKED_SKIP: ['\u2605 You liked a SKIP', 'var(--purple)'], HIRED: ['\u2713 You hired', 'var(--green)'], REJECTED_GOOD: ['\u2715 You rejected a top pick', 'var(--red)'] };
+  var html = '';
+  for (var i = overrides.length - 1; i >= 0; i--) {
+    var o = overrides[i];
+    var lb = labels[o.action] || ['override', 'var(--muted)'];
+    html += '<div style="display:flex;align-items:center;gap:9px;padding:7px 4px;border-bottom:1px solid var(--line)">';
+    html += '<span style="font-size:10px;font-weight:800;color:' + lb[1] + ';white-space:nowrap">' + lb[0] + '</span>';
+    html += '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(o.name) + '</div>';
+    html += '<div style="font-size:10px;color:var(--muted)">' + esc(o.role) + ' \u00B7 AI said ' + o.aiRec.replace(/_/g, ' ') + ' ' + o.aiScore + '%' + (o.by && o.by !== 'Me' ? ' \u00B7 by ' + esc(o.by) : '') + '</div></div>';
+    html += '</div>';
+  }
+  box.innerHTML = html;
+}
+
 function openEnginePanel() { $('enginePanel').classList.add('open'); checkOllama(); }
 function closeEnginePanel() { $('enginePanel').classList.remove('open'); updateEngineStatus(); }
 
@@ -2940,6 +3160,27 @@ function onGlobalClick(ev) {
 function init() {
   // static buttons
   $('btnEngine').addEventListener('click', openEnginePanel);
+  $('btnLearn').addEventListener('click', openLearnPanel);
+  $('btnLearnClose').addEventListener('click', function () { $('learnPanel').classList.remove('open'); });
+  $('learnPanel').addEventListener('click', function (ev) { if (ev.target === $('learnPanel')) $('learnPanel').classList.remove('open'); });
+  $('learnToggle').addEventListener('change', function (ev) {
+    prefEnabled = ev.target.checked; saveData();
+    toast(prefEnabled ? 'Learning on \u2014 scoring will adapt to your choices' : 'Learning paused', prefEnabled ? 'ok' : 'warn');
+  });
+  $('btnPrefSave').addEventListener('click', function () {
+    prefProfile = $('prefText').value.trim(); prefManualEdit = true; saveData();
+    toast('Preferences saved \u2014 future scoring will use these', 'ok');
+  });
+  $('btnPrefAuto').addEventListener('click', function () {
+    prefManualEdit = false; rebuildPrefProfile(); $('prefText').value = prefProfile; saveData();
+    toast('Rebuilt from your ' + overrides.length + ' decision(s)', 'ok');
+  });
+  $('btnPrefReset').addEventListener('click', function () {
+    if (!window.confirm('Reset all learned preferences and override history? This cannot be undone.')) return;
+    overrides = []; prefProfile = ''; prefManualEdit = false; saveData();
+    renderLearnPanel();
+    toast('Learning reset', 'ok');
+  });
   $('btnSync').addEventListener('click', function () { $('syncPanel').classList.add('open'); });
   $('btnOutreach').addEventListener('click', openOutreach);
   $('btnOutreachClose').addEventListener('click', closeOutreach);
